@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card text-center" style="margin-bottom: 2rem;">
+    <h1>My Bus Pass</h1>
+    <h3 style="opacity: 0.8; font-weight: 400;">User: {{ user.username }}</h3>
+    <h3>Wallet Balance: <span style="color: var(--success-color);">₹{{ user.balance }}</span></h3>
+</div>
+
+<div class="flex" style="flex-wrap: wrap; justify-content: center; gap: 2rem;">
+
+    <!-- Pass Display Card -->
+    <div class="card" style="flex: 1; min-width: 300px; text-align: center;">
+        <h2 style="margin-bottom: 1rem;">Current Pass</h2>
+        {% if is_valid %}
+        <div style="background: white; padding: 1rem; border-radius: 8px; display: inline-block;">
+            <img src="{{ barcode_img }}" alt="Pass Barcode" style="max-width: 100%; height: auto;">
+        </div>
+        <p style="margin-top: 1rem;">Valid Until: <strong>{{ pass.valid_until }}</strong></p>
+        <span class="badge badge-success">Active</span>
+        {% else %}
+        <div style="padding: 2rem; border: 2px dashed var(--glass-border); border-radius: 8px; opacity: 0.5;">
+            No Active Pass
+        </div>
+        <p style="color: var(--danger-color); margin-top: 1rem;">Expired on: {{ pass.valid_until }}</p>
+        <span class="badge badge-danger">Expired</span>
+        {% endif %}
+
+        <form method="post" style="margin-top: 2rem;">
+            {% csrf_token %}
+            <button type="submit" name="buy_pass" class="btn btn-primary btn-block">
+                {% if is_valid %} Extend (30 Days) - ₹50 {% else %} Buy Pass (30 Days) - ₹50 {% endif %}
+            </button>
+        </form>
+    </div>
+
+    <!-- Wallet Refill Card -->
+    <div class="card" style="flex: 1; min-width: 300px;">
+        <h2>Add Funds</h2>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="refill" value="true">
+            <div class="form-group">
+                <label>Amount (₹)</label>
+                {{ form.amount }}
+            </div>
+            <button type="submit" class="btn btn-success btn-block" style="background-color: var(--success-color);">Add
+                Money</button>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

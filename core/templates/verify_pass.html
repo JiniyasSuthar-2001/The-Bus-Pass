@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="card text-center">
+        <h1>Verify Pass</h1>
+        <p style="margin-bottom: 2rem; opacity: 0.8;">Scan the barcode or enter the code manually.</p>
+
+        <form method="post" style="margin-bottom: 2rem;">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="text" name="barcode_data" placeholder="Scan Barcode / Enter Code" autofocus required
+                    style="text-align: center; font-size: 1.2rem; padding: 1rem;">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Check Validity</button>
+        </form>
+
+        {% if result %}
+        <div class="card"
+            style="background: {% if result.status == 'success' %}var(--success-color){% else %}var(--danger-color){% endif %}; color: white;">
+            <h2>{{ result.msg }}</h2>
+        </div>
+        {% endif %}
+
+        <div style="margin-top: 2rem;">
+            <a href="{% url 'admin_dashboard' %}" style="color: var(--text-color);">&larr; Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

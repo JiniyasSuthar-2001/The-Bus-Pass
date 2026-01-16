@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 4rem auto;">
+    <div class="card text-center">
+        <h2 style="margin-bottom: 2rem;">Welcome Back</h2>
+        <form method="post">
+            {% csrf_token %}
+            <!-- Manually rendering form fields for better control over styling -->
+            {% for field in form %}
+            <div class="form-group" style="text-align: left;">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <small style="color: var(--danger-color);">{{ field.errors|striptags }}</small>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary btn-block">Login</button>
+        </form>
+        <p class="mt-4">
+            Don't have an account? <a href="{% url 'register' %}" style="color: var(--accent-color);">Register here</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
