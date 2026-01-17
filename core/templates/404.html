@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card" style="text-align: center; padding: 3rem; margin-top: 2rem;">
+    <h1 style="font-size: 3rem; color: var(--danger-color); margin-bottom: 1rem;">404</h1>
+    <h2 style="margin-bottom: 1.5rem;">Page Not Found</h2>
+    <p style="font-size: 1.2rem; opacity: 0.8; margin-bottom: 2rem;">
+        404 contact the developer or compneny
+    </p>
+    <a href="{% url 'home' %}" class="btn btn-primary" style="text-decoration: none;">Go Home</a>
+</div>
+{% endblock %}
