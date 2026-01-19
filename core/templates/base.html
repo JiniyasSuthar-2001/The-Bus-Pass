@@ -1,35 +1,53 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bus Pass System</title>
     <!-- Importing Google Fonts for premium typography -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS (via CDN for simplicity) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                    }
+                }
+            }
+        }
+    </script>
     <!-- Main CSS -->
     <link rel="stylesheet" href="{% static 'style.css' %}">
 </head>
-<body>
-    <div class="container">
+
+<body class="bg-gray-100 text-gray-800 font-sans">
+    <div class="container mx-auto px-4 py-6">
         <!-- Navigation Bar -->
-        <nav class="navbar">
-            <a href="{% url 'home' %}" class="nav-brand">BusPass</a>
-            <div class="nav-links">
+        <nav class="flex justify-between items-center mb-8 bg-white p-4 rounded-lg shadow-sm">
+            <a href="{% url 'home' %}" class="text-2xl font-bold text-indigo-600">BusPass</a>
+            <div class="flex items-center space-x-6">
                 {% if user.is_authenticated %}
-                    <span>Hello, {{ user.username }}</span>
-                    {% if user.role == 'ADMIN' or user.is_superuser %}
-                        <a href="{% url 'admin_dashboard' %}">Admin Dashboard</a>
-                    {% else %}
-                        <a href="{% url 'user_dashboard' %}">My Pass</a>
-                    {% endif %}
-                    <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn" style="background:none; color:inherit; border:none; padding:0; margin-left:1.5rem; text-decoration:underline; cursor:pointer;">Logout</button>
-                    </form>
+                <span class="text-gray-600">Hello, <strong>{{ user.username }}</strong></span>
+                {% if user.role == 'ADMIN' or user.is_superuser %}
+                <a href="{% url 'admin_dashboard' %}" class="hover:text-indigo-600">Admin Dashboard</a>
+                {% elif user.role == 'CONDUCTOR' %}
+                <a href="{% url 'conductor_dashboard' %}" class="hover:text-indigo-600">Scanner</a>
                 {% else %}
-                    <a href="{% url 'login' %}">Login</a>
-                    <a href="{% url 'register' %}" class="btn btn-primary">Register</a>
+                <a href="{% url 'user_dashboard' %}" class="hover:text-indigo-600">My Pass</a>
+                {% endif %}
+                <form action="{% url 'logout' %}" method="post" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="text-red-500 hover:underline">Logout</button>
+                </form>
+                {% else %}
+                <a href="{% url 'login' %}" class="hover:text-indigo-600">Login</a>
+                <a href="{% url 'register' %}"
+                    class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Register</a>
                 {% endif %}
             </div>
         </nav>
@@ -51,4 +69,5 @@
         </main>
     </div>
 </body>
+
 </html>

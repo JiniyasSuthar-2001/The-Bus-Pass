@@ -26,3 +26,8 @@ class PassAdmin(admin.ModelAdmin):
 
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Pass, PassAdmin)
+admin.site.register(Payment)
+
+admin.site.site_header = "Bus Pass Admin Dashboard"
+admin.site.site_title = "Bus Pass Admin Portal"
+admin.site.index_title = "Welcome to Bus Pass Admin"

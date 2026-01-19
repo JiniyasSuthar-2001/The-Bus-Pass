@@ -7,9 +7,24 @@ class CustomUser(AbstractUser):
     ROLE_CHOICES = (
         ('ADMIN', 'Admin'),
         ('USER', 'User'),
+        ('CONDUCTOR', 'Conductor'),
     )
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='USER')
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+class Payment(models.Model):
+    TRANSACTION_TYPES = (
+        ('REFILL', 'Wallet Refill'),
+        ('PURCHASE', 'Pass Purchase'),
+    )
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='payments')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    timestamp = models.DateTimeField(default=timezone.now)
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)
+    description = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.transaction_type} - {self.amount}"
 
     def __str__(self):
         return self.username

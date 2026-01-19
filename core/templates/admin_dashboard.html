@@ -1,47 +1,147 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<div class="card">
-    <div class="flex justify-between items-center" style="margin-bottom: 1rem;">
-        <h1>Admin Dashboard</h1>
-        <a href="{% url 'verify_pass' %}" class="btn btn-primary">Scan / Verify Pass</a>
+<div class="space-y-6">
+    <!-- Header Actions -->
+    <div class="flex justify-between items-center bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+        <div class="space-x-4">
+            <a href="{% url 'create_conductor' %}"
+                class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Create Conductor</a>
+            <a href="{% url 'verify_pass' %}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Open
+                Scanner</a>
+        </div>
     </div>
 
-    <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
-        <thead>
-            <tr style="text-align: left; border-bottom: 1px solid var(--glass-border);">
-                <th style="padding: 1rem;">Username</th>
-                <th style="padding: 1rem;">Email</th>
-                <th style="padding: 1rem;">Balance</th>
-                <th style="padding: 1rem;">Pass Status</th>
-                <th style="padding: 1rem;">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for u in users %}
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                <td style="padding: 1rem;">{{ u.username }}</td>
-                <td style="padding: 1rem;">{{ u.email }}</td>
-                <td style="padding: 1rem;">${{ u.balance }}</td>
-                <td style="padding: 1rem;">
-                    {% if u.bus_pass.is_valid %}
-                    <span class="badge badge-success">Valid</span>
-                    {% else %}
-                    <span class="badge badge-danger">Expired</span>
-                    {% endif %}
-                </td>
-                <td style="padding: 1rem;">
-                    <a href="{% url 'delete_user' u.id %}" class="btn btn-danger"
-                        style="font-size: 0.8rem; padding: 0.5rem 1rem;"
-                        onclick="return confirm('Are you sure?')">Delete</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5" style="padding: 2rem; text-align: center;">No users found.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold mb-4">Payment History</h2>
+            <canvas id="paymentChart"></canvas>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-bold mb-4">User Stats</h2>
+            <!-- Simple stats for now -->
+            <div class="space-y-4">
+                <div class="flex justify-between items-center p-4 bg-gray-50 rounded">
+                    <span class="text-gray-600">Total Users</span>
+                    <span class="text-2xl font-bold">{{ users.count }}</span>
+                </div>
+                <div class="flex justify-between items-center p-4 bg-gray-50 rounded">
+                    <span class="text-gray-600">Total Conductors</span>
+                    <span class="text-2xl font-bold">{{ conductors.count }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-bold mb-4">Registered Users</h2>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-100 border-b">
+                        <th class="p-4 font-semibold">Username</th>
+                        <th class="p-4 font-semibold">Email</th>
+                        <th class="p-4 font-semibold">Balance</th>
+                        <th class="p-4 font-semibold">Pass Status</th>
+                        <th class="p-4 font-semibold">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-4">{{ u.username }}</td>
+                        <td class="p-4">{{ u.email }}</td>
+                        <td class="p-4">₹{{ u.balance }}</td>
+                        <td class="p-4">
+                            {% if u.bus_pass.is_valid %}
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">Valid</span>
+                            {% else %}
+                            <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-sm">Expired</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-4">
+                            <a href="{% url 'delete_user' u.id %}"
+                                class="text-red-600 hover:text-red-800 text-sm font-medium"
+                                onclick="return confirm('Are you sure?')">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="p-6 text-center text-gray-500">No users found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Conductors Table -->
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-bold mb-4">Conductors</h2>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-100 border-b">
+                        <th class="p-4 font-semibold">Username</th>
+                        <th class="p-4 font-semibold">Email</th>
+                        <th class="p-4 font-semibold">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in conductors %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-4">{{ c.username }}</td>
+                        <td class="p-4">{{ c.email }}</td>
+                        <td class="p-4">
+                            <a href="{% url 'delete_user' c.id %}"
+                                class="text-red-600 hover:text-red-800 text-sm font-medium"
+                                onclick="return confirm('Delete Conductor?')">Remove</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="p-6 text-center text-gray-500">No conductors found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const paymentData = JSON.parse('{{ payment_data|escapejs }}');
+
+    // Group by Date for Chart
+    const result = {};
+    paymentData.forEach(p => {
+        result[p.date] = (result[p.date] || 0) + p.amount;
+    });
+
+    const ctx = document.getElementById('paymentChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: Object.keys(result),
+            datasets: [{
+                label: 'Total Payments (₹)',
+                data: Object.values(result),
+                borderColor: '#5D5CDE',
+                backgroundColor: 'rgba(93, 92, 222, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
 {% endblock %}
