@@ -1,52 +1,69 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
-    <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">Add Money to Wallet</h2>
-
-    <form method="post" class="space-y-6">
-        {% csrf_token %}
-
-        <div>
-            <label class="block text-gray-700 font-bold mb-2">Amount (₹)</label>
-            <input type="number" name="amount" min="1" step="0.01"
-                class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g. 500" required>
+<div class="max-w-2xl mx-auto px-4 py-8">
+    <!-- Progress Indicator -->
+    <div class="flex items-center justify-center mb-8 space-x-4">
+        <div class="flex items-center">
+            <div class="w-8 h-8 bg-teal-500 text-white rounded-full flex items-center justify-center font-bold">1</div>
+            <span class="ml-2 font-medium text-teal-600">Amount</span>
         </div>
-
-        <div class="border-t pt-4">
-            <h3 class="text-lg font-semibold mb-3">Payment Method</h3>
-
-            <div class="space-y-2">
-                <label class="flex items-center space-x-3 p-3 border rounded cursor-pointer hover:bg-gray-50">
-                    <input type="radio" name="method" value="card" checked class="form-radio h-5 w-5 text-blue-600">
-                    <span class="text-gray-900 font-medium">Credit/Debit Card</span>
-                    <span class="text-gray-500 text-sm ml-auto">Visa/Mastercard</span>
-                </label>
-
-                <label class="flex items-center space-x-3 p-3 border rounded cursor-pointer hover:bg-gray-50">
-                    <input type="radio" name="method" value="upi" class="form-radio h-5 w-5 text-blue-600">
-                    <span class="text-gray-900 font-medium">UPI</span>
-                    <span class="text-gray-500 text-sm ml-auto">GPay/PhonePe</span>
-                </label>
-            </div>
+        <div class="h-1 w-16 bg-gray-300"></div>
+        <div class="flex items-center">
+            <div class="w-8 h-8 bg-gray-300 text-gray-500 rounded-full flex items-center justify-center font-bold">2</div>
+            <span class="ml-2 text-gray-500">Confirm</span>
         </div>
-
-        <!-- Mock Card Fields (Visual Only) -->
-        <div class="grid grid-cols-2 gap-4" id="card-details">
-            <input type="text" placeholder="Card Number" class="col-span-2 w-full p-2 border rounded text-sm" disabled
-                value="4242 4242 4242 4242 (Mock)">
-            <input type="text" placeholder="MM/YY" class="w-full p-2 border rounded text-sm" disabled value="12/30">
-            <input type="text" placeholder="CVV" class="w-full p-2 border rounded text-sm" disabled value="123">
+        <div class="h-1 w-16 bg-gray-300"></div>
+        <div class="flex items-center">
+            <div class="w-8 h-8 bg-gray-300 text-gray-500 rounded-full flex items-center justify-center font-bold">3</div>
+            <span class="ml-2 text-gray-500">Done</span>
         </div>
+    </div>
 
-        <button type="submit"
-            class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition duration-300">
-            Pay Securely
-        </button>
-    </form>
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="p-6 sm:p-10">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 mobile-center">Add Money to Wallet</h2>
 
-    <div class="mt-4 text-center">
-        <a href="{% url 'user_dashboard' %}" class="text-blue-500 hover:underline">Cancel</a>
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">Enter Amount (₹)</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-3.5 text-gray-500 font-bold">₹</span>
+                        <input type="number" name="amount" min="1" step="1"
+                            class="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-lg transition-colors"
+                            placeholder="500" required>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-100 pt-6">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-700">Payment Method</h3>
+
+                    <div class="space-y-3">
+                        <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-teal-50 hover:border-teal-200 transition-all group">
+                            <input type="radio" name="method" value="razorpay" checked class="form-radio h-5 w-5 text-teal-600 focus:ring-teal-500">
+                            <div class="ml-3 flex-1">
+                                <span class="block text-gray-900 font-medium group-hover:text-teal-700">Online Payment</span>
+                                <span class="block text-gray-500 text-sm">UPI, Credit/Debit Card, Netbanking</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <!-- Icons could go here -->
+                                <div class="h-6 w-10 bg-gray-200 rounded"></div>
+                                <div class="h-6 w-10 bg-gray-200 rounded"></div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-[#1ABC9C] text-white font-bold py-4 rounded-lg hover:bg-teal-600 transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                    Proceed to Pay
+                </button>
+            </form>
+        </div>
+        <div class="bg-gray-50 px-6 py-4 text-center border-t border-gray-100">
+            <a href="{% url 'user_dashboard' %}" class="text-gray-500 hover:text-gray-700 text-sm font-medium">Cancel and Return</a>
+        </div>
     </div>
 </div>
 {% endblock %}

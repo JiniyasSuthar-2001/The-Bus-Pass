@@ -112,12 +112,16 @@ def payment_page(request):
     import razorpay
     from django.conf import settings
     
-    # Use environment variables or placeholders
-    KEY_ID = "rzp_test_placeholder" # Replace with os.environ.get('RAZORPAY_KEY_ID')
-    KEY_SECRET = "secret_placeholder" # Replace with os.environ.get('RAZORPAY_KEY_SECRET')
+    # Razorpay Test Keys (Provided by User)
+    KEY_ID = "rzp_test_S5hYqp6DgfqELU" 
+    KEY_SECRET = "VM3nLon1Kt4yveBEfi1rdQ4e" 
     
     # Initialize Razorpay Client
-    # client = razorpay.Client(auth=(KEY_ID, KEY_SECRET))
+    client = None
+    try:
+        client = razorpay.Client(auth=(KEY_ID, KEY_SECRET))
+    except Exception as e:
+        print(f"Razorpay Client Error: {e}")
 
     if request.method == 'POST':
         amount = request.POST.get('amount')
@@ -129,10 +133,21 @@ def payment_page(request):
             # Razorpay expects amount in paise (100 paise = 1 INR)
             amount_paise = int(amount_val * 100)
             
-            # Create Order (Mocking the API call if no valid key)
-            # order = client.order.create(data=data)
-            # For demonstration without keys, we pass dummy data
-            order_id = f"order_{base64.b64encode(str(timezone.now()).encode()).decode()[:10]}"
+            order_id = None
+            if client:
+                try:
+                    data = { "amount": amount_paise, "currency": "INR", "receipt": f"rcpt_{request.user.id}" }
+                    order = client.order.create(data=data)
+                    order_id = order['id']
+                except Exception as e:
+                    print(f"Order Creation Error: {e}")
+                    # Fallback if API fails (for dev/test without internet)
+                    order_id = f"order_{base64.b64encode(str(timezone.now()).encode()).decode()[:10]}"
+            else:
+                 order_id = f"order_{base64.b64encode(str(timezone.now()).encode()).decode()[:10]}"
+            
+            # Store amount in session for verification step
+            request.session['payment_amount'] = str(amount_val)
             
             context = {
                 'key_id': KEY_ID,
@@ -164,7 +179,16 @@ def payment_success(request):
         # Assume amount was passed in session or recalculate (here we just create record)
         # Getting amount from a hidden field or similar is risky, better to verify order_id API
         # For this mock flow:
-        amount = 500.00 # Placeholder default if not tracked in session
+        # Retrieve amount from session
+        amount_str = request.session.get('payment_amount', '0.00')
+        try:
+            amount = float(amount_str)
+        except ValueError:
+            amount = 0.00
+            
+        if amount <= 0:
+             messages.error(request, "Payment verification failed: Invalid amount.")
+             return redirect('user_dashboard')
         
         Payment.objects.create(
             user=request.user,

@@ -28,27 +28,41 @@
 <body class="bg-gray-100 text-gray-800 font-sans">
     <div class="container mx-auto px-4 py-6">
         <!-- Navigation Bar -->
-        <nav class="flex justify-between items-center mb-8 bg-white p-4 rounded-lg shadow-sm">
-            <a href="{% url 'home' %}" class="text-2xl font-bold text-indigo-600">BusPass</a>
-            <div class="flex items-center space-x-6">
-                {% if user.is_authenticated %}
-                <span class="text-gray-600">Hello, <strong>{{ user.username }}</strong></span>
-                {% if user.role == 'ADMIN' or user.is_superuser %}
-                <a href="{% url 'admin_dashboard' %}" class="hover:text-indigo-600">Admin Dashboard</a>
-                {% elif user.role == 'CONDUCTOR' %}
-                <a href="{% url 'conductor_dashboard' %}" class="hover:text-indigo-600">Scanner</a>
-                {% else %}
-                <a href="{% url 'user_dashboard' %}" class="hover:text-indigo-600">My Pass</a>
-                {% endif %}
-                <form action="{% url 'logout' %}" method="post" class="inline">
-                    {% csrf_token %}
-                    <button type="submit" class="text-red-500 hover:underline">Logout</button>
-                </form>
-                {% else %}
-                <a href="{% url 'login' %}" class="hover:text-indigo-600">Login</a>
-                <a href="{% url 'register' %}"
-                    class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Register</a>
-                {% endif %}
+        <!-- Navigation Bar -->
+        <nav class="bg-white p-4 rounded-lg shadow-sm mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <a href="{% url 'home' %}"
+                        class="text-2xl font-bold text-indigo-600 hover:text-indigo-700 transition">BusPass</a>
+                </div>
+
+                <div class="flex flex-wrap justify-center items-center gap-4 md:gap-6">
+                    {% if user.is_authenticated %}
+                    <span class="text-gray-600 hidden sm:inline">Hello, <strong>{{ user.username }}</strong></span>
+
+                    {% if user.role == 'ADMIN' or user.is_superuser %}
+                    <a href="{% url 'admin_dashboard' %}"
+                        class="font-medium text-gray-700 hover:text-indigo-600 transition">Admin</a>
+                    {% elif user.role == 'CONDUCTOR' %}
+                    <a href="{% url 'conductor_dashboard' %}"
+                        class="font-medium text-gray-700 hover:text-indigo-600 transition">Scanner</a>
+                    {% else %}
+                    <a href="{% url 'user_dashboard' %}"
+                        class="font-medium text-gray-700 hover:text-indigo-600 transition">My Pass</a>
+                    {% endif %}
+
+                    <form action="{% url 'logout' %}" method="post" class="inline">
+                        {% csrf_token %}
+                        <button type="submit"
+                            class="text-red-500 font-medium hover:text-red-700 transition">Logout</button>
+                    </form>
+                    {% else %}
+                    <a href="{% url 'login' %}"
+                        class="font-medium text-gray-700 hover:text-indigo-600 transition">Login</a>
+                    <a href="{% url 'register' %}"
+                        class="bg-indigo-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-indigo-700 transition shadow-md">Register</a>
+                    {% endif %}
+                </div>
             </div>
         </nav>
 

@@ -1,15 +1,48 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md text-center">
-    <h2 class="text-2xl font-bold mb-4">Confirm Payment</h2>
-    <p class="mb-4 text-gray-600">You are about to pay <span class="font-bold text-gray-800">₹{{ amount }}</span></p>
+<div class="max-w-2xl mx-auto px-4 py-8">
+    <!-- Progress Indicator -->
+    <div class="flex items-center justify-center mb-8 space-x-4">
+        <div class="flex items-center">
+            <div class="w-8 h-8 bg-teal-500 text-white rounded-full flex items-center justify-center font-bold">✓</div>
+            <span class="ml-2 font-medium text-teal-600">Amount</span>
+        </div>
+        <div class="h-1 w-16 bg-teal-500"></div>
+        <div class="flex items-center">
+            <div class="w-8 h-8 bg-teal-500 text-white rounded-full flex items-center justify-center font-bold">2</div>
+            <span class="ml-2 font-medium text-teal-600">Confirm</span>
+        </div>
+        <div class="h-1 w-16 bg-gray-300"></div>
+        <div class="flex items-center">
+            <div class="w-8 h-8 bg-gray-300 text-gray-500 rounded-full flex items-center justify-center font-bold">3
+            </div>
+            <span class="ml-2 text-gray-500">Done</span>
+        </div>
+    </div>
 
-    <!-- Razorpay Button -->
-    <button id="rzp-button1" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition">
-        Pay Now
-    </button>
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="p-6 sm:p-10 text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Confirm Payment</h2>
+            <p class="text-gray-500 mb-8">Please review the details below</p>
 
-    <!-- Hidden form for legacy fallback or direct post if needed, but Razorpay is JS based -->
+            <div class="bg-gray-50 p-6 rounded-lg mb-8 inline-block w-full max-w-sm">
+                <p class="text-gray-600 mb-1">Total Amount</p>
+                <div class="text-4xl font-bold text-gray-800">₹{{ amount }}</div>
+                <div class="mt-4 text-xs text-gray-400">Order ID: {{ order_id }}</div>
+            </div>
+
+            <!-- Razorpay Button -->
+            <button id="rzp-button1"
+                class="w-full max-w-sm bg-[#1ABC9C] text-white font-bold py-4 rounded-lg hover:bg-teal-600 transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                Pay Now
+            </button>
+        </div>
+
+        <div class="bg-gray-50 px-6 py-4 text-center border-t border-gray-100">
+            <a href="{% url 'payment_page' %}" class="text-gray-500 hover:text-gray-700 text-sm font-medium">Cancel
+                Transaction</a>
+        </div>
+    </div>
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>

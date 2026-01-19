@@ -1,28 +1,36 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="max-w-4xl mx-auto">
-    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
-        <h2 class="text-2xl font-bold mb-4">Conductor Dashboard</h2>
-        <p class="mb-4">Scan User Barcode to verify pass validity.</p>
+    <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Conductor Dashboard</h2>
+        <p class="mb-4 text-gray-600">Scan User Barcode to verify pass validity.</p>
 
         <!-- Scanner Section -->
-        <div id="reader" style="width: 100%; max-width: 500px; margin: 0 auto;"></div>
-        
+        <div class="relative overflow-hidden rounded-lg bg-black">
+            <div id="reader" class="w-full"></div>
+        </div>
+
         <!-- Manual Entry -->
         <div class="mt-6 border-t pt-4">
-            <h3 class="text-lg font-semibold mb-2">Manual Entry</h3>
+            <h3 class="text-lg font-semibold mb-2 text-gray-700">Manual Entry</h3>
             <form method="post" class="flex gap-4">
                 {% csrf_token %}
-                <input type="text" name="barcode_data" placeholder="Enter Barcode ID" class="flex-1 p-2 border rounded" required>
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Check</button>
+                <input type="text" name="barcode_data" placeholder="Enter Barcode ID"
+                    class="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+                <button type="submit"
+                    class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition">Check</button>
             </form>
         </div>
     </div>
 
     <!-- Result Display -->
     {% if result %}
-    <div class="p-6 rounded-lg shadow-md text-center {% if result.status == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
-        <h3 class="text-3xl font-bold mb-2">{{ result.msg }}</h3>
+    <div id="scan-result"
+        class="p-6 rounded-lg shadow-md text-center transition-colors duration-500 ease-in-out {% if result.status == 'success' %}bg-green-100 text-green-800 border border-green-200{% else %}bg-red-100 text-red-800 border border-red-200{% endif %}">
+        <h3 class="text-3xl font-bold mb-2 icon-animate">
+            {% if result.status == 'success' %}✔{% else %}✖{% endif %}
+            {{ result.msg }}
+        </h3>
         <p class="text-xl">{{ result.detail }}</p>
     </div>
     {% endif %}
@@ -30,27 +38,73 @@
 
 <!-- HTML5-QRCode Library -->
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<style>
+    /* Custom styling to make the scanner look cleaner */
+    #reader {
+        border: none !important;
+    }
+
+    #reader__dashboard_section_csr button {
+        display: none;
+    }
+
+    /* Hide unnecessary buttons if possible */
+</style>
 <script>
     function onScanSuccess(decodedText, decodedResult) {
-        // Handle on success condition with the decoded text or result.
-        // Auto-submit the form
-        console.log(`Scan result: ${decodedText}`, decodedResult);
-        let input = document.querySelector('input[name="barcode_data"]');
-        input.value = decodedText;
-        document.querySelector('form').submit();
-        
-        // Stop scanning after success to prevent multiple submits
-        html5QrcodeScanner.clear();
+        console.log(`Scan result: ${decodedText}`);
+
+        // Stop scanning immediately to prevent duplicate submissions
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear().then(_ => {
+                let input = document.querySelector('input[name="barcode_data"]');
+                input.value = decodedText;
+                document.querySelector('form').submit();
+            }).catch(error => {
+                console.error("Failed to clear scanner", error);
+                // Submit anyway if clear fails
+                let input = document.querySelector('input[name="barcode_data"]');
+                input.value = decodedText;
+                document.querySelector('form').submit();
+            });
+        }
     }
 
     function onScanFailure(error) {
-        // handle scan failure, usually better to ignore and keep scanning.
-        // for example:
         // console.warn(`Code scan error = ${error}`);
     }
 
+    // Config for Barcode (Code 128)
+    // wider qrbox for 1D barcodes
+    let config = {
+        fps: 10,
+        qrbox: { width: 300, height: 150 },
+        aspectRatio: 1.333,
+        formatsToSupport: [Html5QrcodeSupportedFormats.CODE_128],
+        confirmOnScanFailure: false,
+        rememberLastUsedCamera: true
+    };
+
     let html5QrcodeScanner = new Html5QrcodeScanner(
-        "reader", { fps: 10, qrbox: 250 });
+        "reader", config, /* verbose= */ false);
+
     html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+    // Auto-dismiss/reset background logic
+    const resultDiv = document.getElementById('scan-result');
+    if (resultDiv) {
+        setTimeout(function () {
+            // Fade out effect or reset color
+            // resultDiv.classList.remove('bg-green-100', 'bg-red-100', 'text-green-800', 'text-red-800');
+            // resultDiv.classList.add('bg-white', 'text-gray-500'); // Reset to neutral
+            // OR just fade it out completely as it's a "flash" message style
+            resultDiv.style.opacity = '0.5';
+
+            // Per user request "color in background should go back to original"
+            // We'll change the background to white transparent after 3 seconds
+            resultDiv.style.backgroundColor = 'transparent';
+            resultDiv.style.border = 'none';
+        }, 3000);
+    }
 </script>
 {% endblock %}
