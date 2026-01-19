@@ -1,45 +1,98 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="max-w-2xl mx-auto px-4 py-8">
+<div class="max-w-xl mx-auto px-4 py-8">
     <!-- Progress Indicator -->
-    <div class="flex items-center justify-center mb-8 space-x-4">
+    <div class="flex items-center justify-center mb-10 space-x-2">
         <div class="flex items-center">
-            <div class="w-8 h-8 bg-teal-500 text-white rounded-full flex items-center justify-center font-bold">✓</div>
-            <span class="ml-2 font-medium text-teal-600">Amount</span>
+            <div
+                class="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold shadow-md">
+                ✓</div>
+            <span class="hidden sm:block ml-2 font-medium text-indigo-600 text-sm">Amount</span>
         </div>
-        <div class="h-1 w-16 bg-teal-500"></div>
+        <div class="h-1 w-12 bg-indigo-600 rounded"></div>
         <div class="flex items-center">
-            <div class="w-8 h-8 bg-teal-500 text-white rounded-full flex items-center justify-center font-bold">2</div>
-            <span class="ml-2 font-medium text-teal-600">Confirm</span>
+            <div
+                class="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold shadow-lg ring-2 ring-indigo-200">
+                2</div>
+            <span class="ml-2 font-bold text-indigo-700 text-sm">Confirm</span>
         </div>
-        <div class="h-1 w-16 bg-gray-300"></div>
+        <div class="h-1 w-12 bg-gray-200 rounded"></div>
         <div class="flex items-center">
-            <div class="w-8 h-8 bg-gray-300 text-gray-500 rounded-full flex items-center justify-center font-bold">3
-            </div>
-            <span class="ml-2 text-gray-500">Done</span>
+            <div
+                class="w-8 h-8 bg-white border-2 border-gray-300 text-gray-400 rounded-full flex items-center justify-center font-bold">
+                3</div>
+            <span class="hidden sm:block ml-2 text-gray-400 text-sm">Done</span>
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div class="p-6 sm:p-10 text-center">
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">Confirm Payment</h2>
-            <p class="text-gray-500 mb-8">Please review the details below</p>
+    <!-- Main Payment Card -->
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+        <!-- Header -->
+        <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                    </path>
+                </svg>
+                Secure Checkout
+            </h2>
+            <span class="text-xs font-medium bg-gray-200 text-gray-600 px-2 py-1 rounded">ID: {{ order_id|slice:":8"
+                }}...</span>
+        </div>
 
-            <div class="bg-gray-50 p-6 rounded-lg mb-8 inline-block w-full max-w-sm">
-                <p class="text-gray-600 mb-1">Total Amount</p>
-                <div class="text-4xl font-bold text-gray-800">₹{{ amount }}</div>
-                <div class="mt-4 text-xs text-gray-400">Order ID: {{ order_id }}</div>
+        <div class="p-6 sm:p-8">
+            <div class="text-center mb-8">
+                <p class="text-gray-500 text-sm font-medium uppercase tracking-wide mb-2">Total Amount</p>
+                <div class="text-5xl font-extrabold text-gray-900 tracking-tight">
+                    <span class="text-2xl align-top text-gray-400 font-bold mr-1">₹</span>{{ amount }}
+                </div>
+            </div>
+
+            <!-- Details Table -->
+            <div class="bg-gray-50 rounded-lg p-4 mb-8 text-sm">
+                <div class="flex justify-between py-2 border-b border-gray-200">
+                    <span class="text-gray-500">Transaction Type</span>
+                    <span class="font-medium text-gray-800">Wallet Refill</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-200">
+                    <span class="text-gray-500">User</span>
+                    <span class="font-medium text-gray-800">{{ user.username }}</span>
+                </div>
+                <div class="flex justify-between py-2">
+                    <span class="text-gray-500">Gateway</span>
+                    <span class="font-medium text-gray-800 flex items-center gap-1">
+                        Razorpay
+                        <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+                        </svg>
+                    </span>
+                </div>
             </div>
 
             <!-- Razorpay Button -->
             <button id="rzp-button1"
-                class="w-full max-w-sm bg-[#1ABC9C] text-white font-bold py-4 rounded-lg hover:bg-teal-600 transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 text-lg">
                 Pay Now
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3">
+                    </path>
+                </svg>
             </button>
+
+            <p class="text-center text-xs text-gray-400 mt-4 flex items-center justify-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+                </svg>
+                Encrypted & Secure Payment
+            </p>
         </div>
 
         <div class="bg-gray-50 px-6 py-4 text-center border-t border-gray-100">
-            <a href="{% url 'payment_page' %}" class="text-gray-500 hover:text-gray-700 text-sm font-medium">Cancel
+            <a href="{% url 'payment_page' %}"
+                class="text-gray-500 hover:text-red-600 text-sm font-medium transition-colors">Cancel
                 Transaction</a>
         </div>
     </div>
@@ -53,7 +106,7 @@
         "currency": "INR",
         "name": "Bus Pass System",
         "description": "Wallet Refill",
-        "image": "https://example.com/your_logo",
+        "image": "https://cdn-icons-png.flaticon.com/512/3063/3063823.png", /* Bus Icon */
         "order_id": "{{ order_id }}", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
         "handler": function (response) {
             // Success Handler
@@ -93,8 +146,7 @@
         },
         "modal": {
             "ondismiss": function () {
-                alert('Payment Cancelled');
-                window.location.href = "{% url 'payment_page' %}";
+                // Optional: handle dismiss
             }
         }
     };
@@ -103,7 +155,5 @@
         rzp1.open();
         e.preventDefault();
     }
-    // Optionally open automatically
-    // rzp1.open();
 </script>
 {% endblock %}

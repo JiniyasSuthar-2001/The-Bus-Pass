@@ -10,41 +10,45 @@
 <div class="flex" style="flex-wrap: wrap; justify-content: center; gap: 2rem;">
 
     <!-- Pass Display Card -->
-    <div class="card" style="flex: 1; min-width: 300px; text-align: center;">
-        <h2 style="margin-bottom: 1rem;">Current Pass</h2>
+    <div class="bg-white p-6 rounded-lg shadow-md flex-1 min-w-[300px] text-center">
+        <h2 class="text-xl font-bold mb-4">Current Pass</h2>
         {% if is_valid %}
-        <div style="background: white; padding: 1rem; border-radius: 8px; display: inline-block;">
-            <img src="{{ barcode_img }}" alt="Pass Barcode" style="max-width: 100%; height: auto;">
+        <div class="bg-white p-4 rounded border inline-block mb-4">
+            <img src="{{ barcode_img }}" alt="Pass Barcode" class="max-w-full h-auto">
         </div>
-        <p style="margin-top: 1rem;">Valid Until: <strong>{{ pass.valid_until }}</strong></p>
-        <span class="badge badge-success">Active</span>
+        <p class="mt-4 mb-2">Valid Until: <strong>{{ pass.valid_until }}</strong></p>
+        <span
+            class="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">Active</span>
         {% else %}
-        <div style="padding: 2rem; border: 2px dashed var(--glass-border); border-radius: 8px; opacity: 0.5;">
+        <div class="p-8 border-2 border-dashed border-gray-300 rounded opacity-50 mb-4">
             No Active Pass
         </div>
-        <p style="color: var(--danger-color); margin-top: 1rem;">Expired on: {{ pass.valid_until }}</p>
-        <span class="badge badge-danger">Expired</span>
+        <p class="text-red-500 mt-4">Expired on: {{ pass.valid_until }}</p>
+        <span class="inline-block px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-semibold">Expired</span>
         {% endif %}
 
-        <form method="post" style="margin-top: 2rem;">
+        <form method="post" class="mt-8">
             {% csrf_token %}
-            <button type="submit" name="buy_pass" class="btn btn-primary btn-block">
+            <button type="submit" name="buy_pass"
+                class="w-full bg-[#5D5CDE] text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition shadow-md">
                 {% if is_valid %} Extend (30 Days) - ₹50 {% else %} Buy Pass (30 Days) - ₹50 {% endif %}
             </button>
         </form>
     </div>
 
     <!-- Wallet Refill Card -->
-    <div class="card" style="flex: 1; min-width: 300px;">
-        <h2>Add Funds</h2>
+    <div class="bg-white p-6 rounded-lg shadow-md flex-1 min-w-[300px]">
+        <h2 class="text-xl font-bold mb-4 text-center">Add Funds</h2>
         <form method="post">
             {% csrf_token %}
             <input type="hidden" name="refill" value="true">
-            <div class="form-group">
-                <label>Amount (₹)</label>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Amount (₹)</label>
                 {{ form.amount }}
+                <!-- NOTE: Ensure form.amount renders with Tailwind classes if possible, or wrap it -->
             </div>
-            <button type="submit" class="btn btn-success btn-block" style="background-color: var(--success-color);">Add
+            <button type="submit"
+                class="w-full bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 transition shadow-md">Add
                 Money</button>
         </form>
     </div>

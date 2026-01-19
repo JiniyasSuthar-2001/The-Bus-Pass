@@ -7,7 +7,7 @@ from django.utils import timezone
 from .forms import CustomUserCreationForm, RefillForm
 from .models import CustomUser, Pass, Payment
 import barcode
-from barcode.writer import ImageWriter
+# from barcode.writer import ImageWriter # Removed for performance
 from io import BytesIO
 import base64
 from datetime import timedelta
@@ -25,10 +25,10 @@ def is_conductor(user):
 
 def get_barcode_image(data):
     rv = BytesIO()
-    code = barcode.get('code128', data, writer=ImageWriter())
+    code = barcode.get('code128', data) # Defaults to SVGWriter which is faster
     code.write(rv)
     encoded = base64.b64encode(rv.getvalue()).decode('utf-8')
-    return f"data:image/png;base64,{encoded}"
+    return f"data:image/svg+xml;base64,{encoded}"
 
 # --- Views ---
 
