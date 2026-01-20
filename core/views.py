@@ -18,12 +18,22 @@ from django.db.models import Sum
 # --- Helper Functions ---
 
 def is_admin(user):
+    """
+    Check if the user has Admin privileges.
+    """
     return user.role == 'ADMIN' or user.is_superuser
 
 def is_conductor(user):
+    """
+    Check if the user is a Conductor.
+    """
     return user.role == 'CONDUCTOR'
 
 def get_barcode_image(data):
+    """
+    Generate a helper function to create a Barcode image (Code128).
+    Returns a base64 encoded string for embedding in HTML.
+    """
     rv = BytesIO()
     code = barcode.get('code128', data) # Defaults to SVGWriter which is faster
     code.write(rv)
@@ -33,6 +43,11 @@ def get_barcode_image(data):
 # --- Views ---
 
 def home(request):
+    """
+    Landing page logic:
+    - If user is logged in, redirect to their respective dashboard based on role.
+    - If user is guest, show the login page.
+    """
     if request.user.is_authenticated:
         if is_admin(request.user):
             return redirect('admin_dashboard')
@@ -43,11 +58,15 @@ def home(request):
     return render(request, 'registration/login.html')
 
 def register(request):
+    """
+    User Registration View.
+    Handles creation of new users using CustomUserCreationForm.
+    """
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            user.role = 'USER'
+            user.role = 'USER' # Default role
             user.save()
             login(request, user)
             messages.success(request, "Registration successful!")
@@ -58,16 +77,29 @@ def register(request):
 
 @login_required
 def user_dashboard(request):
+    """
+    Main dashboard for standard Users.
+    Display:
+    - Wallet balance
+    - Current Pass status (Valid/Expired)
+    - Barcode for scanning
+    
+    Actions:
+    - Refill Wallet (Redirects to payment)
+    - Buy/Extend Pass (Deducts balance)
+    """
     if is_admin(request.user):
         return redirect('admin_dashboard')
     if is_conductor(request.user):
         return redirect('conductor_dashboard')
 
+    # Get or create a pass for the user
     user_pass, created = Pass.objects.get_or_create(
         user=request.user,
         defaults={'valid_until': timezone.now().date() - timedelta(days=1)}
     )
     
+    # Generate barcode if pass is valid
     barcode_img = None
     if user_pass.is_valid:
         barcode_img = get_barcode_image(user_pass.barcode_data)
@@ -79,6 +111,7 @@ def user_dashboard(request):
             COST = 50
             if request.user.balance >= COST:
                 request.user.balance -= COST
+                # Extend pass from today or current validity
                 start_date = max(user_pass.valid_until, timezone.now().date())
                 user_pass.valid_until = start_date + timedelta(days=30)
                 user_pass.save()
@@ -109,6 +142,11 @@ def user_dashboard(request):
 
 @login_required
 def payment_page(request):
+    """
+    Payment Gateway Integration (Razorpay).
+    Initiates payment order and renders payment page.
+    Includes fallback mock logic if API keys are missing.
+    """
     # Razorpay Test Keys (Provided by User)
     KEY_ID = "rzp_test_S5hYqp6DgfqELU" 
     KEY_SECRET = "VM3nLon1Kt4yveBEfi1rdQ4e" 
@@ -167,7 +205,10 @@ def payment_page(request):
 @login_required
 @csrf_exempt
 def payment_success(request):
-    """Handle success callback from Razorpay."""
+    """
+    Handle success callback from Razorpay.
+    Verifies payment (mock verification here) and updates user balance.
+    """
     if request.method == "POST":
         # In real scenario, verify signature here using client.utility.verify_payment_signature()
         
@@ -177,9 +218,6 @@ def payment_success(request):
         razorpay_signature = request.POST.get('razorpay_signature')
         
         # Assume amount was passed in session or recalculate (here we just create record)
-        # Getting amount from a hidden field or similar is risky, better to verify order_id API
-        # For this mock flow:
-        # Retrieve amount from session
         amount_str = request.session.get('payment_amount', '0.00')
         try:
             amount = float(amount_str)
@@ -190,12 +228,14 @@ def payment_success(request):
              messages.error(request, "Payment verification failed: Invalid amount.")
              return redirect('user_dashboard')
         
+        # Log successful payment
         Payment.objects.create(
             user=request.user,
             amount=amount,
             transaction_type='REFILL',
             description=f'Razorpay Refill: {razorpay_payment_id}'
         )
+        # Update Balance
         request.user.balance += _decimal(amount)
         request.user.save()
         
@@ -211,6 +251,13 @@ def _decimal(val):
 @login_required
 @user_passes_test(is_admin)
 def admin_dashboard(request):
+    """
+    Admin Dashboard View.
+    Displays:
+    - User Stats
+    - List of Conductors
+    - Payment History Chart
+    """
     users = CustomUser.objects.filter(role='USER')
     conductors = CustomUser.objects.filter(role='CONDUCTOR')
     
@@ -218,7 +265,6 @@ def admin_dashboard(request):
     payments = Payment.objects.all().order_by('-timestamp')
     
     # Simple aggregation for charts (by date)
-    # in real app, use annotate/truncMonth etc.
     payment_data = []
     for p in payments:
         payment_data.append({
@@ -237,6 +283,10 @@ def admin_dashboard(request):
 @login_required
 @user_passes_test(is_admin)
 def create_conductor(request):
+    """
+    Admin View to create a new Conductor account.
+    Using CustomUserCreationForm but forcing role='CONDUCTOR'.
+    """
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
@@ -253,7 +303,8 @@ def create_conductor(request):
 @user_passes_test(is_conductor)
 def conductor_dashboard(request):
     """
-    Scanner/Verification view for Conductors.
+    Conductor Dashboard / Scanner View.
+    Allows conductors to verify passes by entering barcode data (simulated scan).
     """
     result = None
     if request.method == 'POST':
@@ -272,6 +323,9 @@ def conductor_dashboard(request):
 @login_required
 @user_passes_test(is_admin)
 def delete_user(request, user_id):
+    """
+    Admin View to delete a user/conductor.
+    """
     user = get_object_or_404(CustomUser, id=user_id)
     user.delete()
     messages.success(request, "User deleted.")
@@ -283,5 +337,7 @@ def delete_user(request, user_id):
 @login_required
 @user_passes_test(is_admin)
 def verify_pass(request):
-    # Admins can also scan
+    """
+    Scanner view alias for Admins.
+    """
     return conductor_dashboard(request)
