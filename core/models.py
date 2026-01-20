@@ -26,9 +26,6 @@ class Payment(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.transaction_type} - {self.amount}"
 
-    def __str__(self):
-        return self.username
-
 class Pass(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='bus_pass')
     valid_until = models.DateField()
