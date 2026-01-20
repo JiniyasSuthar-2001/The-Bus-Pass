@@ -109,9 +109,6 @@ def user_dashboard(request):
 
 @login_required
 def payment_page(request):
-    import razorpay
-    from django.conf import settings
-    
     # Razorpay Test Keys (Provided by User)
     KEY_ID = "rzp_test_S5hYqp6DgfqELU" 
     KEY_SECRET = "VM3nLon1Kt4yveBEfi1rdQ4e" 
@@ -119,9 +116,11 @@ def payment_page(request):
     # Initialize Razorpay Client
     client = None
     try:
+        import razorpay
         client = razorpay.Client(auth=(KEY_ID, KEY_SECRET))
-    except Exception as e:
-        print(f"Razorpay Client Error: {e}")
+    except (ImportError, Exception) as e:
+        print(f"Razorpay Client/Import Error: {e}")
+        client = None
 
     if request.method == 'POST':
         amount = request.POST.get('amount')
@@ -141,9 +140,10 @@ def payment_page(request):
                     order_id = order['id']
                 except Exception as e:
                     print(f"Order Creation Error: {e}")
-                    # Fallback if API fails (for dev/test without internet)
+                    # Fallback if API fails
                     order_id = f"order_{base64.b64encode(str(timezone.now()).encode()).decode()[:10]}"
             else:
+                 # Fallback if Client not initialized (or import failed)
                  order_id = f"order_{base64.b64encode(str(timezone.now()).encode()).decode()[:10]}"
             
             # Store amount in session for verification step
