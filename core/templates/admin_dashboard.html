@@ -119,13 +119,28 @@
         <h2 class="text-xl font-bold mb-4">Manage Cities</h2>
 
         <!-- Add City Form -->
-        <form action="{% url 'add_city' %}" method="POST" class="flex gap-2 mb-6">
-            {% csrf_token %}
-            <input type="text" name="name" placeholder="City Name" required
-                class="flex-1 p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none">
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add</button>
-        </form>
-
+        <div class="glass-card p-6 rounded-lg mb-8">
+            <h3 class="text-xl font-bold mb-4">Add New City</h3>
+            <form action="{% url 'add_city' %}" method="post" class="flex gap-4">
+                {% csrf_token %}
+                <select name="state" class="flex-1 p-3 border rounded-lg" required>
+                    <option value="" disabled selected>Select State</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="Delhi">Delhi</option>
+                    <option value="Karnataka">Karnataka</option>
+                    <option value="Gujarat">Gujarat</option>
+                    <option value="Rajasthan">Rajasthan</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="West Bengal">West Bengal</option>
+                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                    <option value="Punjab">Punjab</option>
+                    <option value="Other">Other</option>
+                </select>
+                <input type="text" name="name" placeholder="City Name" class="flex-1 p-3 border rounded-lg" required>
+                <button type="submit"
+                    class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700">Add City</button>
+            </form>
+        </div>
         <div class="max-h-60 overflow-y-auto">
             <table class="w-full text-left">
                 <thead class="bg-gray-100">

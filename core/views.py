@@ -262,15 +262,26 @@ def user_dashboard(request):
     # Fetch Payment History & Active Tickets
     payments = Payment.objects.filter(user=request.user).order_by('-timestamp')
     active_tickets = Ticket.objects.filter(user=request.user, is_used=False).order_by('-purchase_time')
-    cities = City.objects.all()
+    # Serialize Cities and Routes for JS (Grouping by State)
     routes = Route.objects.all()
+    cities_data = list(City.objects.all().values('id', 'name', 'state'))
+    routes_data = list(routes.values(
+        'id', 
+        'source__id', 'source__name', 'source__state',
+        'destination__id', 'destination__name', 'destination__state',
+        'cost'
+    ))
+    
+    # Get Unique States
+    states = City.STATE_CHOICES
 
     context = {
-        'pass': user_pass, # Keep for backward compat/profile
+        'pass': user_pass, 
         'payments': payments,
         'active_tickets': active_tickets,
-        'cities': cities,
-        'routes': list(routes.values('id', 'source__id', 'destination__id', 'cost', 'source__name', 'destination__name')), # Serialize for JS
+        'states': [s[0] for s in states],
+        'cities_json': json.dumps(cities_data),
+        'routes_json': json.dumps(routes_data),
     }
     return render(request, 'user_dashboard.html', context)
 
@@ -382,7 +393,7 @@ def validate_ticket(request):
                 ticket.is_used = True
                 ticket.used_time = timezone.now()
                 ticket.save()
-                messages.success(request, f"VALID TICKET! {ticket.route.source.name} -> {ticket.route.destination.name} (User: {ticket.user.username})")
+                messages.success(request, f"VALID TICKET! {ticket.route.source.name} ({ticket.route.source.state}) -> {ticket.route.destination.name} ({ticket.route.destination.state})")
                 
         except Ticket.DoesNotExist:
             messages.error(request, "INVALID TICKET! Ticket not found.")
@@ -538,9 +549,10 @@ def admin_dashboard(request):
 def add_city(request):
     if request.method == 'POST':
         name = request.POST.get('name')
-        if name:
-            City.objects.get_or_create(name=name)
-            messages.success(request, f"City '{name}' added.")
+        state = request.POST.get('state')
+        if name and state:
+            City.objects.get_or_create(name=name, state=state)
+            messages.success(request, f"City '{name}, {state}' added.")
     return redirect('admin_dashboard')
 
 @login_required

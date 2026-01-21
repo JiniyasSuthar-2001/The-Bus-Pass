@@ -9,27 +9,115 @@
 
 <div class="flex" style="flex-wrap: wrap; justify-content: center; gap: 2rem;">
 
-    <!-- Buy Ticket Card -->
+    <!-- Buy Ticket Card (Dynamic Selection) -->
     <div class="bg-white p-6 rounded-lg shadow-md flex-1 min-w-[300px] text-center">
         <h2 class="text-xl font-bold mb-4">Buy Ticket</h2>
-        <form action="{% url 'buy_ticket' %}" method="post" class="space-y-4">
+        <form action="{% url 'buy_ticket' %}" method="post" class="space-y-4" id="ticketForm">
             {% csrf_token %}
-            <div>
-                <label class="block text-gray-700 font-bold mb-2">Select Trip</label>
-                <select name="route_id" class="w-full p-2 border rounded" required>
-                    <option value="" disabled selected>-- Choose Route --</option>
-                    {% for r in routes %}
-                    <option value="{{ r.id }}">{{ r.source__name }} -> {{ r.destination__name }} (₹{{ r.cost }})
-                    </option>
-                    {% endfor %}
-                </select>
+
+            <!-- Source Selection -->
+            <div class="text-left">
+                <label class="block text-xs font-bold text-gray-500 uppercase">From</label>
+                <div class="flex gap-2">
+                    <select id="src_state" class="w-1/2 p-2 border rounded text-sm" onchange="filterCities('src')">
+                        <option value="">State</option>
+                        {% for s in states %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+                    </select>
+                    <select id="src_city" class="w-1/2 p-2 border rounded text-sm" disabled onchange="findRoutes()">
+                        <option value="">City</option>
+                    </select>
+                </div>
             </div>
-            <button type="submit"
-                class="w-full bg-[#5D5CDE] text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition shadow-md">
+
+            <!-- Destination Selection -->
+            <div class="text-left">
+                <label class="block text-xs font-bold text-gray-500 uppercase">To</label>
+                <div class="flex gap-2">
+                    <select id="dest_state" class="w-1/2 p-2 border rounded text-sm" onchange="filterCities('dest')">
+                        <option value="">State</option>
+                        {% for s in states %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+                    </select>
+                    <select id="dest_city" class="w-1/2 p-2 border rounded text-sm" disabled onchange="findRoutes()">
+                        <option value="">City</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Found Route Display -->
+            <div id="route_result" class="hidden p-3 bg-gray-50 rounded border border-gray-200">
+                <p class="text-sm">Fare: <span id="fare_display" class="font-bold text-lg text-green-600">₹0</span></p>
+                <p id="route_msg" class="text-xs text-gray-500"></p>
+                <input type="hidden" name="route_id" id="selected_route_id">
+            </div>
+
+            <button type="submit" id="buy_btn" disabled
+                class="w-full bg-gray-300 text-white font-bold py-3 rounded-lg transition shadow-md">
                 Purchase Ticket
             </button>
         </form>
     </div>
+
+    <!-- Data Injection for JS -->
+    <script>
+        const cities = JSON.parse('{{ cities_json|escapejs }}');
+        const routes = JSON.parse('{{ routes_json|escapejs }}');
+
+        function filterCities(type) {
+            const state = document.getElementById(`${type}_state`).value;
+            const citySelect = document.getElementById(`${type}_city`);
+
+            // Reset
+            citySelect.innerHTML = '<option value="">City</option>';
+            citySelect.disabled = !state;
+
+            if (state) {
+                const filtered = cities.filter(c => c.state === state);
+                filtered.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.name;
+                    citySelect.appendChild(opt);
+                });
+            }
+            findRoutes();
+        }
+
+        function findRoutes() {
+            const srcId = parseInt(document.getElementById('src_city').value);
+            const destId = parseInt(document.getElementById('dest_city').value);
+            const resultDiv = document.getElementById('route_result');
+            const buyBtn = document.getElementById('buy_btn');
+
+            if (!srcId || !destId) {
+                resultDiv.classList.add('hidden');
+                buyBtn.disabled = true;
+                buyBtn.classList.add('bg-gray-300');
+                buyBtn.classList.remove('bg-[#5D5CDE]', 'hover:bg-indigo-700');
+                return;
+            }
+
+            // Find Route
+            const validRoute = routes.find(r => r.source__id === srcId && r.destination__id === destId);
+
+            if (validRoute) {
+                document.getElementById('fare_display').textContent = `₹${validRoute.cost}`;
+                document.getElementById('route_msg').textContent = `${validRoute.source__name} -> ${validRoute.destination__name}`;
+                document.getElementById('selected_route_id').value = validRoute.id;
+
+                resultDiv.classList.remove('hidden');
+                buyBtn.disabled = false;
+                buyBtn.classList.remove('bg-gray-300');
+                buyBtn.classList.add('bg-[#5D5CDE]', 'hover:bg-indigo-700');
+            } else {
+                resultDiv.classList.remove('hidden');
+                document.getElementById('fare_display').textContent = "No Bus";
+                document.getElementById('route_msg').textContent = "No direct route available.";
+                buyBtn.disabled = true;
+                buyBtn.classList.add('bg-gray-300');
+                buyBtn.classList.remove('bg-[#5D5CDE]', 'hover:bg-indigo-700');
+            }
+        }
+    </script>
 
     <!-- Wallet Refill Card -->
     <div class="bg-white p-6 rounded-lg shadow-md flex-1 min-w-[300px]">

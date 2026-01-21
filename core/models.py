@@ -19,13 +19,27 @@ class CustomUser(AbstractUser):
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
 class City(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    STATE_CHOICES = (
+        ('Maharashtra', 'Maharashtra'),
+        ('Delhi', 'Delhi'),
+        ('Karnataka', 'Karnataka'),
+        ('Gujarat', 'Gujarat'),
+        ('Rajasthan', 'Rajasthan'),
+        ('Tamil Nadu', 'Tamil Nadu'),
+        ('West Bengal', 'West Bengal'),
+        ('Uttar Pradesh', 'Uttar Pradesh'),
+        ('Punjab', 'Punjab'),
+        ('Other', 'Other')
+    )
+    name = models.CharField(max_length=100)
+    state = models.CharField(max_length=100, choices=STATE_CHOICES, default='Maharashtra')
     
-    def __str__(self):
-        return self.name
-
     class Meta:
         verbose_name_plural = "Cities"
+        unique_together = ('name', 'state')
+
+    def __str__(self):
+        return f"{self.name}, {self.state}"
 
 class Route(models.Model):
     source = models.ForeignKey(City, on_delete=models.CASCADE, related_name='routes_from')
