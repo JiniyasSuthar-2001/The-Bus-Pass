@@ -201,9 +201,10 @@ def register(request):
             user = form.save()
             user.role = 'USER' # Default role
             user.save()
-            login(request, user)
-            messages.success(request, "Registration successful!")
-            return redirect('home')
+            user.save()
+            # login(request, user) # Removed auto-login
+            messages.success(request, "Registration successful! Please login.")
+            return redirect('login')
     else:
         form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
