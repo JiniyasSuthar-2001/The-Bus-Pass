@@ -6,7 +6,10 @@ urlpatterns = [
     # --- Authentication & Home ---
     path('', views.home, name='home'),
     path('register/', views.register, name='register'),
-    path('login/', auth_views.LoginView.as_view(), name='login'),
+    # path('login/', auth_views.LoginView.as_view(), name='login'), # Replaced by custom_login
+    path('login/', views.custom_login, name='login'),
+    path('google-login/', views.google_login, name='google_login'),
+    path('google-callback/', views.google_callback, name='google_callback'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     
     # --- Password Reset Flows (Standard Django) ---

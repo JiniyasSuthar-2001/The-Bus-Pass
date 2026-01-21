@@ -125,3 +125,22 @@ AUTH_USER_MODEL = 'core.CustomUser'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
 
+# --- Google OAuth Settings ---
+import os
+from dotenv import load_dotenv
+
+load_dotenv() # Load variables from .env file if it exists
+
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
+
+# Dynamic Redirect URI based on environment
+if 'pythonanywhere' in BASE_DIR.as_posix() or not DEBUG:
+    # Production (PythonAnywhere)
+    GOOGLE_REDIRECT_URI = 'https://JiniyasSuthar.pythonanywhere.com/google-callback/'
+    CSRF_TRUSTED_ORIGINS = ['https://JiniyasSuthar.pythonanywhere.com']
+else:
+    # Local Development
+    GOOGLE_REDIRECT_URI = 'http://127.0.0.1:8000/google-callback/'
+
+

@@ -14,6 +14,12 @@ from datetime import timedelta
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Sum
+import requests
+from django.conf import settings
+from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth.forms import AuthenticationForm
+from django.urls import reverse
+from urllib.parse import urlencode
 
 # --- Helper Functions ---
 
@@ -39,6 +45,127 @@ def get_barcode_image(data):
     code.write(rv)
     encoded = base64.b64encode(rv.getvalue()).decode('utf-8')
     return f"data:image/svg+xml;base64,{encoded}"
+
+    encoded = base64.b64encode(rv.getvalue()).decode('utf-8')
+    return f"data:image/svg+xml;base64,{encoded}"
+
+# --- Authentication Views ---
+
+def custom_login(request):
+    """
+    Custom Login View.
+    - RESTRICTS Admistrators and Conductors from logging in here.
+    - Allows only 'USER' role (or standard users).
+    """
+    if request.user.is_authenticated:
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            # Security Check: Prevent Admin/Conductor login on public form
+            if is_admin(user) or is_conductor(user):
+                messages.error(request, "Admins and Conductors must use the restricted portal.")
+                return redirect('login')
+            
+            auth_login(request, user)
+            return redirect('home')
+    else:
+        form = AuthenticationForm()
+    
+    return render(request, 'registration/login.html', {'form': form})
+
+def google_login(request):
+    """
+    Initiates the Google OAuth2 flow.
+    """
+    base_url = "https://accounts.google.com/o/oauth2/v2/auth"
+    params = {
+        "response_type": "code",
+        "client_id": settings.GOOGLE_CLIENT_ID,
+        "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+        "scope": "openid email profile",
+        "access_type": "online",
+    }
+    url = f"{base_url}?{urlencode(params)}"
+    return redirect(url)
+
+def google_callback(request):
+    """
+    Callback from Google.
+    Exchanges code for token, gets user info, creates/logs in user.
+    """
+    code = request.GET.get('code')
+    error = request.GET.get('error')
+    
+    if error or not code:
+        messages.error(request, "Google Login failed or cancelled.")
+        return redirect('login')
+        
+    # Exchange code for token
+    token_url = "https://oauth2.googleapis.com/token"
+    token_data = {
+        "code": code,
+        "client_id": settings.GOOGLE_CLIENT_ID,
+        "client_secret": settings.GOOGLE_CLIENT_SECRET,
+        "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+        "grant_type": "authorization_code",
+    }
+    
+    try:
+        res = requests.post(token_url, data=token_data)
+        res_json = res.json()
+        access_token = res_json.get('access_token')
+        
+        if not access_token:
+            messages.error(request, "Failed to obtain access token from Google.")
+            return redirect('login')
+            
+        # Get User Info
+        user_info_url = "https://www.googleapis.com/oauth2/v3/userinfo"
+        user_res = requests.get(user_info_url, headers={"Authorization": f"Bearer {access_token}"})
+        user_info = user_res.json()
+        
+        email = user_info.get('email')
+        if not email:
+            messages.error(request, "Could not retrieve email from Google.")
+            return redirect('login')
+            
+        # Check if user exists
+        try:
+            user = CustomUser.objects.get(email=email)
+            if is_admin(user) or is_conductor(user):
+                messages.error(request, "Admins/Conductors cannot use Google Login.")
+                return redirect('login')
+        except CustomUser.DoesNotExist:
+            # Create new user
+            username = email.split('@')[0]
+            # Ensure unique username
+            base_username = username
+            counter = 1
+            while CustomUser.objects.filter(username=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
+                
+            user = CustomUser.objects.create(
+                username=username,
+                email=email,
+                role='USER'
+            )
+            # Set unusable password (social login only) or random
+            user.set_unusable_password()
+            user.save()
+            
+        # Login
+        auth_login(request, user)
+        messages.success(request, f"Welcome back, {user.username}!")
+        return redirect('home')
+        
+    except Exception as e:
+        print(f"Google Auth Error: {e}")
+        messages.error(request, "Something went wrong during Google Login.")
+        return redirect('login')
 
 # --- Views ---
 

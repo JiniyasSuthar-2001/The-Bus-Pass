@@ -18,6 +18,15 @@
             {% endfor %}
             <button type="submit" class="btn btn-primary btn-block">Login</button>
         </form>
+
+        <div style="margin-top: 1rem; text-align: center;">
+            <p style="color: #666; margin-bottom: 0.5rem;">OR</p>
+            <a href="{% url 'google_login' %}" style="display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; border: 1px solid #ddd; border-radius: 5px; text-decoration: none; color: #333; background-color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: 100%; box-sizing: border-box;">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width: 18px; height: 18px; margin-right: 10px;">
+                Login with Google
+            </a>
+        </div>
+
         <p class="mt-4">
             Don't have an account? <a href="{% url 'register' %}" style="color: var(--accent-color);">Register here</a>
         </p>
