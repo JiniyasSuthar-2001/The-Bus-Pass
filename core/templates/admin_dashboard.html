@@ -175,8 +175,9 @@
                 <label class="text-xs text-gray-500">Source</label>
                 <select name="source" required class="w-full p-3 border rounded-lg bg-gray-50">
                     <option value="" disabled selected>Select Source</option>
-                    {% for city in cities %}<option value="{{ city.id }}">{{ city.name }} ({{ city.state }})</option>{%
-                    endfor %}
+                    {% for city in cities %}
+                    <option value="{{ city.id }}">{{ city.name }} ({{ city.state }})</option>
+                    {% endfor %}
                 </select>
             </div>
 
@@ -184,8 +185,9 @@
                 <label class="text-xs text-gray-500">Destination</label>
                 <select name="destination" required class="w-full p-3 border rounded-lg bg-gray-50">
                     <option value="" disabled selected>Select Destination</option>
-                    {% for city in cities %}<option value="{{ city.id }}">{{ city.name }} ({{ city.state }})</option>{%
-                    endfor %}
+                    {% for city in cities %}
+                    <option value="{{ city.id }}">{{ city.name }} ({{ city.state }})</option>
+                    {% endfor %}
                 </select>
             </div>
 

@@ -277,6 +277,10 @@ def user_dashboard(request):
         'cost',
         'bus_number', 'gate', 'date', 'departure_time', 'arrival_time'
     ))
+    # Convert Decimal to float for JSON serialization
+    for r in routes_data:
+        if 'cost' in r:
+            r['cost'] = float(r['cost'])
     
     # Get Unique States
     states = City.STATE_CHOICES
