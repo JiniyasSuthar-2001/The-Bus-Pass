@@ -269,11 +269,11 @@ def user_dashboard(request):
     payments = Payment.objects.filter(user=request.user).order_by('-timestamp')
     active_tickets = Ticket.objects.filter(user=request.user, is_used=False).order_by('-purchase_time')
     cities_data = list(City.objects.all().values('id', 'name', 'state'))
+    routes = Route.objects.all()
     routes_data = list(routes.values(
         'id', 
         'source__id', 'source__name', 'source__state',
         'destination__id', 'destination__name', 'destination__state',
-        'cost',
         'cost',
         'bus_number', 'gate', 'date', 'departure_time', 'arrival_time'
     ))
