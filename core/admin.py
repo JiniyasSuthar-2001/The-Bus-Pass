@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, Pass, Payment
+from .models import CustomUser, Pass, Payment, City, Route, City, Route
 
 class CustomUserAdmin(UserAdmin):
     """
@@ -23,21 +23,15 @@ class PassAdmin(admin.ModelAdmin):
     Admin configuration for the Pass model.
     Shows validity status in the list view.
     """
-    list_display = ['user', 'valid_until', 'is_valid_display', 'created_at']
+    list_display = ['user', 'is_active', 'created_at']
     search_fields = ['user__username', 'barcode_data']
-    list_filter = ['valid_until']
-    
-    def is_valid_display(self, obj):
-        """
-        Helper to display boolean icon for validity in Admin.
-        """
-        return obj.is_valid
-    is_valid_display.boolean = True
-    is_valid_display.short_description = 'Is Valid'
+    list_filter = ['is_active']
 
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Pass, PassAdmin)
 admin.site.register(Payment)
+admin.site.register(City)
+admin.site.register(Route)
 
 admin.site.site_header = "Bus Pass Admin Dashboard"
 admin.site.site_title = "Bus Pass Admin Portal"

@@ -303,6 +303,61 @@ def conductor_login(request):
     return render(request, 'registration/conductor_login.html', {'form': form})
 
 @login_required
+def get_routes(request):
+    """API for Conductor to get routes"""
+    routes = Route.objects.all().values('id', 'source__name', 'destination__name', 'cost')
+    return JsonResponse(list(routes), safe=False)
+
+@login_required
+def issue_ticket(request):
+    """
+    Process Ticket Issuance.
+    - Verify Conductor.
+    - Check Balance.
+    - Deduct Fare & Record Transaction.
+    """
+    if not (is_conductor(request.user) or is_admin(request.user)):
+        return redirect('home')
+
+    if request.method == 'POST':
+        barcode_data = request.POST.get('barcode_data')
+        route_id = request.POST.get('route_id')
+        
+        try:
+            # Find User by Barcode
+            user_pass = Pass.objects.get(barcode_data=barcode_data)
+            user = user_pass.user
+            route = Route.objects.get(id=route_id)
+            
+            # Check Balance
+            if user.balance >= route.cost:
+                user.balance -= route.cost
+                user.save()
+                
+                # Record Transaction
+                Payment.objects.create(
+                    user=user,
+                    amount=route.cost,
+                    transaction_type='TICKET',
+                    description=f"Trip: {route.source.name} to {route.destination.name}"
+                )
+                
+                messages.success(request, f"Ticket Issued! ₹{route.cost} deducted. Bal: ₹{user.balance}")
+                return redirect('conductor_dashboard')
+            else:
+                messages.error(request, f"Insufficient Balance! User has ₹{user.balance}, Fare is ₹{route.cost}")
+                return redirect('conductor_dashboard')
+
+        except Pass.DoesNotExist:
+            messages.error(request, "Invalid Pass Barcode.")
+        except Route.DoesNotExist:
+            messages.error(request, "Invalid Route selected.")
+        except Exception as e:
+            messages.error(request, f"Error: {str(e)}")
+            
+    return redirect('conductor_dashboard')
+
+@login_required
 def payment_page(request):
     """
     Payment Gateway Integration (Razorpay).

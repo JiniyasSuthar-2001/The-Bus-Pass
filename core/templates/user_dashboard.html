@@ -16,9 +16,9 @@
         <div class="bg-white p-4 rounded border inline-block mb-4">
             <img src="{{ barcode_img }}" alt="Pass Barcode" class="max-w-full h-auto">
         </div>
-        <p class="mt-4 mb-2">Valid Until: <strong>{{ pass.valid_until }}</strong></p>
-        <span
-            class="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">Active</span>
+        <p class="mt-4 mb-2">Scan this ID for Ticketing</p>
+        <span class="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">Active
+            ID</span>
         {% else %}
         <div class="p-8 border-2 border-dashed border-gray-300 rounded opacity-50 mb-4">
             No Active Pass
@@ -27,25 +27,16 @@
         <span class="inline-block px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-semibold">Expired</span>
         {% endif %}
 
-        <form method="post" class="mt-8">
-            {% csrf_token %}
-            <button type="submit" name="buy_pass"
-                class="w-full bg-[#5D5CDE] text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition shadow-md">
-                {% if is_valid %} Extend (30 Days) - ₹50 {% else %} Buy Pass (30 Days) - ₹50 {% endif %}
-            </button>
-        </form>
     </div>
 
     <!-- Wallet Refill Card -->
     <div class="bg-white p-6 rounded-lg shadow-md flex-1 min-w-[300px]">
         <h2 class="text-xl font-bold mb-4 text-center">Add Funds</h2>
-        <form method="post">
+        <form action="{% url 'recharge_wallet' %}" method="post">
             {% csrf_token %}
-            <input type="hidden" name="refill" value="true">
             <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Amount (₹)</label>
-                {{ form.amount }}
-                <!-- NOTE: Ensure form.amount renders with Tailwind classes if possible, or wrap it -->
+                <input type="number" name="amount" placeholder="Amount (₹)" required
+                    class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
             </div>
             <button type="submit"
                 class="w-full bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 transition shadow-md">Add
@@ -53,5 +44,45 @@
         </form>
     </div>
 
+</div>
+
+<!-- Payment History Section -->
+<div class="mt-8 bg-white p-6 rounded-lg shadow-md">
+    <h2 class="text-xl font-bold mb-4">Payment & Trip History</h2>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left">
+            <thead class="bg-gray-100">
+                <tr class="border-b">
+                    <th class="p-4">Date & Time</th>
+                    <th class="p-4">Details</th>
+                    <th class="p-4">Type</th>
+                    <th class="p-4">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in payments %}
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-4 text-gray-600">{{ p.timestamp|date:"M d, Y H:i" }}</td>
+                    <td class="p-4 font-medium">{{ p.description }}</td>
+                    <td class="p-4">
+                        {% if p.transaction_type == 'REFILL' %}
+                        <span class="text-green-600 font-bold">Refill</span>
+                        {% else %}
+                        <span class="text-blue-600 font-bold">Ticket</span>
+                        {% endif %}
+                    </td>
+                    <td
+                        class="p-4 {% if p.transaction_type == 'REFILL' %}text-green-600{% else %}text-red-600{% endif %} font-bold">
+                        {% if p.transaction_type == 'REFILL' %}+{% else %}-{% endif %}₹{{ p.amount }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="p-6 text-center text-gray-500">No transactions found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

@@ -21,15 +21,21 @@ urlpatterns = [
     # --- User Dashboard & Payments ---
     path('dashboard/', views.user_dashboard, name='user_dashboard'),
     path('payment/', views.payment_page, name='payment_page'),
-    path('payment/success/', views.payment_success, name='payment_success'),
+    path('recharge-wallet/', views.recharge_wallet, name='recharge_wallet'),
     
-    # --- Admin Dashboard ---
+    # --- Admin ---
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('add-city/', views.add_city, name='add_city'),
+    path('delete-city/<int:city_id>/', views.delete_city, name='delete_city'),
+    path('add-route/', views.add_route, name='add_route'),
+    path('delete-route/<int:route_id>/', views.delete_route, name='delete_route'),
+    path('api/routes/', views.get_routes, name='get_routes'),
     path('create-conductor/', views.create_conductor, name='create_conductor'),
     path('delete-user/<int:user_id>/', views.delete_user, name='delete_user'),
     
     # --- Conductor & Scanner ---
     path('conductor/login/', views.conductor_login, name='conductor_login'),
     path('conductor-dashboard/', views.conductor_dashboard, name='conductor_dashboard'),
+    path('issue-ticket/', views.issue_ticket, name='issue_ticket'),
     path('verify/', views.verify_pass, name='verify_pass'), # Alias for Admin
 ]
