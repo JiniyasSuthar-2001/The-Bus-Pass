@@ -9,24 +9,26 @@
 
 <div class="flex" style="flex-wrap: wrap; justify-content: center; gap: 2rem;">
 
-    <!-- Pass Display Card -->
+    <!-- Buy Ticket Card -->
     <div class="bg-white p-6 rounded-lg shadow-md flex-1 min-w-[300px] text-center">
-        <h2 class="text-xl font-bold mb-4">Current Pass</h2>
-        {% if is_valid %}
-        <div class="bg-white p-4 rounded border inline-block mb-4">
-            <img src="{{ barcode_img }}" alt="Pass Barcode" class="max-w-full h-auto">
-        </div>
-        <p class="mt-4 mb-2">Scan this ID for Ticketing</p>
-        <span class="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">Active
-            ID</span>
-        {% else %}
-        <div class="p-8 border-2 border-dashed border-gray-300 rounded opacity-50 mb-4">
-            No Active Pass
-        </div>
-        <p class="text-red-500 mt-4">Expired on: {{ pass.valid_until }}</p>
-        <span class="inline-block px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-semibold">Expired</span>
-        {% endif %}
-
+        <h2 class="text-xl font-bold mb-4">Buy Ticket</h2>
+        <form action="{% url 'buy_ticket' %}" method="post" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-gray-700 font-bold mb-2">Select Trip</label>
+                <select name="route_id" class="w-full p-2 border rounded" required>
+                    <option value="" disabled selected>-- Choose Route --</option>
+                    {% for r in routes %}
+                    <option value="{{ r.id }}">{{ r.source__name }} -> {{ r.destination__name }} (₹{{ r.cost }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit"
+                class="w-full bg-[#5D5CDE] text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition shadow-md">
+                Purchase Ticket
+            </button>
+        </form>
     </div>
 
     <!-- Wallet Refill Card -->
@@ -45,6 +47,35 @@
     </div>
 
 </div>
+
+<!-- Active Tickets Section -->
+{% if active_tickets %}
+<div class="mt-8">
+    <h2 class="text-xl font-bold mb-4 text-center">Active Tickets (Show to Conductor)</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for ticket in active_tickets %}
+        <div class="bg-white border-l-4 border-green-500 p-6 rounded-lg shadow-md flex flex-col items-center">
+            <div class="text-center mb-4">
+                <h3 class="font-bold text-lg text-gray-800">{{ ticket.route.source.name }} <span
+                        class="text-gray-400">to</span> {{ ticket.route.destination.name }}</h3>
+                <p class="text-sm text-gray-500">{{ ticket.purchase_time|date:"M d, Y H:i" }}</p>
+            </div>
+
+            <!-- Generate QR on the fly or fetch -->
+            <!-- Note: passing specific ticket barcode data to get_barcode_image via template tag isn't setup. -->
+            <!-- We will assume barcode_img logic in view needs to be smarter OR we use a simple library in JS or just Ticket ID -->
+            <!-- For now, display Ticket ID text prominently if image generation is hard in template loop without custom tag -->
+
+            <div class="bg-gray-100 p-2 rounded mb-2 font-mono text-xs break-all text-center">
+                {{ ticket.barcode_data }}
+            </div>
+
+            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">VALID</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 
 <!-- Payment History Section -->
 <div class="mt-8 bg-white p-6 rounded-lg shadow-md">

@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.utils import timezone
 from .forms import CustomUserCreationForm, RefillForm
-from .models import CustomUser, Pass, Payment
+from .models import CustomUser, Pass, Payment, Ticket, City, Route
 import barcode
 # from barcode.writer import ImageWriter # Removed for performance
 from io import BytesIO
@@ -259,13 +259,66 @@ def user_dashboard(request):
     else:
         form = RefillForm()
 
+    # Fetch Payment History & Active Tickets
+    payments = Payment.objects.filter(user=request.user).order_by('-timestamp')
+    active_tickets = Ticket.objects.filter(user=request.user, is_used=False).order_by('-purchase_time')
+    cities = City.objects.all()
+    routes = Route.objects.all()
+
     context = {
-        'pass': user_pass,
-        'barcode_img': barcode_img,
-        'form': form,
-        'is_valid': user_pass.is_valid
+        'pass': user_pass, # Keep for backward compat/profile
+        'payments': payments,
+        'active_tickets': active_tickets,
+        'cities': cities,
+        'routes': list(routes.values('id', 'source__id', 'destination__id', 'cost', 'source__name', 'destination__name')), # Serialize for JS
     }
     return render(request, 'user_dashboard.html', context)
+
+@login_required
+def recharge_wallet(request):
+    if request.method == 'POST':
+        amount = request.POST.get('amount')
+        try:
+            val = float(amount)
+            if val > 0:
+                request.user.balance += _decimal(val)
+                request.user.save()
+                Payment.objects.create(user=request.user, amount=val, transaction_type='REFILL', description='Manual Refill')
+                messages.success(request, f"Recharged ₹{val} successfully.")
+        except ValueError:
+            messages.error(request, "Invalid Amount")
+    return redirect('user_dashboard')
+
+@login_required
+def buy_ticket(request):
+    """
+    User buys a ticket for a specific route.
+    """
+    if request.method == 'POST':
+        route_id = request.POST.get('route_id')
+        try:
+            route = Route.objects.get(id=route_id)
+            if request.user.balance >= route.cost:
+                request.user.balance -= route.cost
+                request.user.save()
+                
+                # Create Ticket
+                Ticket.objects.create(user=request.user, route=route)
+                
+                # Record Payment
+                Payment.objects.create(
+                    user=request.user,
+                    amount=route.cost,
+                    transaction_type='TICKET',
+                    description=f"Ticket: {route.source.name} to {route.destination.name}"
+                )
+                messages.success(request, "Ticket Purchased!")
+            else:
+                messages.error(request, "Insufficient Balance.")
+        except Route.DoesNotExist:
+            messages.error(request, "Invalid Route.")
+            
+    return redirect('user_dashboard')
 
     return render(request, 'user_dashboard.html', context)
 
@@ -309,49 +362,30 @@ def get_routes(request):
     return JsonResponse(list(routes), safe=False)
 
 @login_required
-def issue_ticket(request):
+def validate_ticket(request):
     """
-    Process Ticket Issuance.
-    - Verify Conductor.
-    - Check Balance.
-    - Deduct Fare & Record Transaction.
+    Conductor scans a ticket to validate and mark it as used.
     """
     if not (is_conductor(request.user) or is_admin(request.user)):
         return redirect('home')
 
     if request.method == 'POST':
         barcode_data = request.POST.get('barcode_data')
-        route_id = request.POST.get('route_id')
         
         try:
-            # Find User by Barcode
-            user_pass = Pass.objects.get(barcode_data=barcode_data)
-            user = user_pass.user
-            route = Route.objects.get(id=route_id)
+            ticket = Ticket.objects.get(barcode_data=barcode_data)
             
-            # Check Balance
-            if user.balance >= route.cost:
-                user.balance -= route.cost
-                user.save()
-                
-                # Record Transaction
-                Payment.objects.create(
-                    user=user,
-                    amount=route.cost,
-                    transaction_type='TICKET',
-                    description=f"Trip: {route.source.name} to {route.destination.name}"
-                )
-                
-                messages.success(request, f"Ticket Issued! ₹{route.cost} deducted. Bal: ₹{user.balance}")
-                return redirect('conductor_dashboard')
+            if ticket.is_used:
+                messages.error(request, f"TICKET USED! Travelled on: {ticket.used_time}")
             else:
-                messages.error(request, f"Insufficient Balance! User has ₹{user.balance}, Fare is ₹{route.cost}")
-                return redirect('conductor_dashboard')
-
-        except Pass.DoesNotExist:
-            messages.error(request, "Invalid Pass Barcode.")
-        except Route.DoesNotExist:
-            messages.error(request, "Invalid Route selected.")
+                # MARK AS USED
+                ticket.is_used = True
+                ticket.used_time = timezone.now()
+                ticket.save()
+                messages.success(request, f"VALID TICKET! {ticket.route.source.name} -> {ticket.route.destination.name} (User: {ticket.user.username})")
+                
+        except Ticket.DoesNotExist:
+            messages.error(request, "INVALID TICKET! Ticket not found.")
         except Exception as e:
             messages.error(request, f"Error: {str(e)}")
             
@@ -494,8 +528,46 @@ def admin_dashboard(request):
     return render(request, 'admin_dashboard.html', {
         'users': users, 
         'conductors': conductors,
-        'payment_data': json.dumps(payment_data)
+        'payment_data': json.dumps(payment_data),
+        'cities': City.objects.all(),
+        'routes': Route.objects.all(),
     })
+
+@login_required
+@user_passes_test(is_admin)
+def add_city(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        if name:
+            City.objects.get_or_create(name=name)
+            messages.success(request, f"City '{name}' added.")
+    return redirect('admin_dashboard')
+
+@login_required
+@user_passes_test(is_admin)
+def delete_city(request, city_id):
+    City.objects.filter(id=city_id).delete()
+    messages.success(request, "City deleted.")
+    return redirect('admin_dashboard')
+
+@login_required
+@user_passes_test(is_admin)
+def add_route(request):
+    if request.method == 'POST':
+        source_id = request.POST.get('source')
+        dest_id = request.POST.get('destination')
+        cost = request.POST.get('cost')
+        if source_id and dest_id and cost:
+            Route.objects.create(source_id=source_id, destination_id=dest_id, cost=cost)
+            messages.success(request, "Route created.")
+    return redirect('admin_dashboard')
+
+@login_required
+@user_passes_test(is_admin)
+def delete_route(request, route_id):
+    Route.objects.filter(id=route_id).delete()
+    messages.success(request, "Route deleted.")
+    return redirect('admin_dashboard')
 
 @login_required
 @user_passes_test(is_admin)

@@ -36,6 +36,7 @@ urlpatterns = [
     # --- Conductor & Scanner ---
     path('conductor/login/', views.conductor_login, name='conductor_login'),
     path('conductor-dashboard/', views.conductor_dashboard, name='conductor_dashboard'),
-    path('issue-ticket/', views.issue_ticket, name='issue_ticket'),
+    path('validate-ticket/', views.validate_ticket, name='validate_ticket'),
+    path('buy-ticket/', views.buy_ticket, name='buy_ticket'),
     path('verify/', views.verify_pass, name='verify_pass'), # Alias for Admin
 ]

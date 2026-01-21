@@ -69,18 +69,32 @@ class Pass(models.Model):
     def save(self, *args, **kwargs):
         """
         Auto-generate a unique UUID for barcode_data if not present.
-        """
+        """ ""
         if not self.barcode_data:
             self.barcode_data = str(uuid.uuid4())
         super().save(*args, **kwargs)
 
     @property
     def is_valid(self):
-        """
-        Check if the pass is currently valid. 
-        For Pay-As-You-Go, it's valid if active.
-        """
+        # Check if the pass is currently valid.
         return self.is_active
 
     def __str__(self):
         return f"Pass for {self.user.username} ({'Active' if self.is_active else 'Inactive'})"
+
+class Ticket(models.Model):
+    # Represents a specific trip ticket purchased by a user.
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='tickets')
+    route = models.ForeignKey(Route, on_delete=models.CASCADE)
+    barcode_data = models.CharField(max_length=100, unique=True, blank=True)
+    is_used = models.BooleanField(default=False)
+    purchase_time = models.DateTimeField(auto_now_add=True)
+    used_time = models.DateTimeField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.barcode_data:
+            self.barcode_data = str(uuid.uuid4())
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Ticket: {self.user.username} - {self.route}"

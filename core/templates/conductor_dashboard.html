@@ -19,38 +19,24 @@
                 </div>
             </div>
 
-            <!-- Issue Ticket Form (Hidden until Scan) -->
+            <!-- Validate Ticket Form (Hidden until Scan) -->
             <div id="ticket-form-container" class="mt-6 border-t pt-4 hidden">
-                <h3 class="text-lg font-bold mb-2 text-gray-700">Issue Ticket</h3>
-                <form action="{% url 'issue_ticket' %}" method="post" class="space-y-4">
+                <h3 class="text-lg font-bold mb-2 text-gray-700">Validate Ticket</h3>
+                <form action="{% url 'validate_ticket' %}" method="post" class="space-y-4">
                     {% csrf_token %}
                     <input type="hidden" name="barcode_data" id="barcode_input">
 
                     <div class="bg-gray-100 p-3 rounded">
-                        <p class="text-sm text-gray-500">User ID Scanned:</p>
-                        <p id="scanned-id-display" class="font-mono font-bold text-lg text-gray-800">...</p>
-                    </div>
-
-                    <div>
-                        <label class="block text-gray-700 font-bold mb-1">Select Route</label>
-                        <select name="route_id" id="route-select" required onchange="updateFare()"
-                            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 bg-white">
-                            <option value="" disabled selected>-- Choose Route --</option>
-                            <!-- Populated via API -->
-                        </select>
-                    </div>
-
-                    <div class="flex justify-between items-center bg-blue-50 p-3 rounded border border-blue-100">
-                        <span class="text-blue-800 font-bold">Fare Cost:</span>
-                        <span id="fare-display" class="text-xl font-bold text-blue-600">₹0</span>
+                        <p class="text-sm text-gray-500">Ticket ID Scanned:</p>
+                        <p id="scanned-id-display" class="font-mono font-bold text-lg text-gray-800 break-all">...</p>
                     </div>
 
                     <div class="flex gap-2">
                         <button type="button" onclick="resetScanner()"
                             class="flex-1 bg-gray-400 text-white font-bold py-3 rounded-lg hover:bg-gray-500">Cancel</button>
                         <button type="submit"
-                            class="flex-1 bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 animate-pulse">Confirm
-                            & Pay</button>
+                            class="flex-1 bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 animate-pulse">Validate
+                            & Burn</button>
                     </div>
                 </form>
             </div>
@@ -82,31 +68,8 @@
         const scanBtn = document.getElementById('start-scan-btn');
         const errorDiv = document.getElementById('scanner-error');
         const ticketForm = document.getElementById('ticket-form-container');
-        const routeSelect = document.getElementById('route-select');
 
         let isScanning = false;
-        let routesData = [];
-
-        // Fetch Routes on Load
-        fetch('/api/routes/')
-            .then(res => res.json())
-            .then(data => {
-                routesData = data;
-                data.forEach(r => {
-                    let opt = document.createElement('option');
-                    opt.value = r.id;
-                    opt.textContent = `${r.source__name} -> ${r.destination__name} (₹${r.cost})`;
-                    routeSelect.appendChild(opt);
-                });
-            });
-
-        function updateFare() {
-            const routeId = parseInt(routeSelect.value);
-            const route = routesData.find(r => r.id === routeId);
-            if (route) {
-                document.getElementById('fare-display').textContent = `₹${route.cost}`;
-            }
-        }
 
         function startScanner() {
             if (isScanning) return;
