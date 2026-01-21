@@ -46,8 +46,15 @@ class Route(models.Model):
     destination = models.ForeignKey(City, on_delete=models.CASCADE, related_name='routes_to')
     cost = models.DecimalField(max_digits=6, decimal_places=2)
     
+    # Schedule & Metadata
+    bus_number = models.CharField(max_length=20, default="BUS-001")
+    gate = models.CharField(max_length=10, default="1")
+    date = models.DateField(default=timezone.now)
+    departure_time = models.TimeField(default=timezone.now)
+    arrival_time = models.TimeField(default=timezone.now)
+    
     def __str__(self):
-        return f"{self.source} -> {self.destination} (₹{self.cost})"
+        return f"{self.source} -> {self.destination} ({self.departure_time.strftime('%H:%M')})"
 
 
 class Payment(models.Model):

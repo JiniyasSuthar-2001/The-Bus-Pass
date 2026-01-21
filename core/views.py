@@ -262,14 +262,14 @@ def user_dashboard(request):
     # Fetch Payment History & Active Tickets
     payments = Payment.objects.filter(user=request.user).order_by('-timestamp')
     active_tickets = Ticket.objects.filter(user=request.user, is_used=False).order_by('-purchase_time')
-    # Serialize Cities and Routes for JS (Grouping by State)
-    routes = Route.objects.all()
     cities_data = list(City.objects.all().values('id', 'name', 'state'))
     routes_data = list(routes.values(
         'id', 
         'source__id', 'source__name', 'source__state',
         'destination__id', 'destination__name', 'destination__state',
-        'cost'
+        'cost',
+        'cost',
+        'bus_number', 'gate', 'date', 'departure_time', 'arrival_time'
     ))
     
     # Get Unique States
@@ -393,7 +393,7 @@ def validate_ticket(request):
                 ticket.is_used = True
                 ticket.used_time = timezone.now()
                 ticket.save()
-                messages.success(request, f"VALID TICKET! {ticket.route.source.name} ({ticket.route.source.state}) -> {ticket.route.destination.name} ({ticket.route.destination.state})")
+                messages.success(request, f"VALID TICKET! {ticket.route.source.name} -> {ticket.route.destination.name} | Date: {ticket.route.date} | Time: {ticket.route.departure_time}")
                 
         except Ticket.DoesNotExist:
             messages.error(request, "INVALID TICKET! Ticket not found.")
@@ -569,8 +569,23 @@ def add_route(request):
         source_id = request.POST.get('source')
         dest_id = request.POST.get('destination')
         cost = request.POST.get('cost')
+        bus_number = request.POST.get('bus_number')
+        gate = request.POST.get('gate')
+        date = request.POST.get('date')
+        departure = request.POST.get('departure')
+        arrival = request.POST.get('arrival')
+
         if source_id and dest_id and cost:
-            Route.objects.create(source_id=source_id, destination_id=dest_id, cost=cost)
+            Route.objects.create(
+                source_id=source_id, 
+                destination_id=dest_id, 
+                cost=cost,
+                bus_number=bus_number,
+                gate=gate,
+                date=date,
+                departure_time=departure,
+                arrival_time=arrival
+            )
             messages.success(request, "Route created.")
     return redirect('admin_dashboard')
 
