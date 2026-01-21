@@ -6,7 +6,11 @@ from django.contrib import messages
 from django.utils import timezone
 from .forms import CustomUserCreationForm, RefillForm
 from .models import CustomUser, Pass, Payment, Ticket, City, Route
-import barcode
+try:
+    import barcode
+except ImportError:
+    barcode = None
+
 # from barcode.writer import ImageWriter # Removed for performance
 from io import BytesIO
 import base64
@@ -40,6 +44,8 @@ def get_barcode_image(data):
     Generate a helper function to create a Barcode image (Code128).
     Returns a base64 encoded string for embedding in HTML.
     """
+    if not barcode:
+        return ""
     rv = BytesIO()
     code = barcode.get('code128', data) # Defaults to SVGWriter which is faster
     code.write(rv)
