@@ -138,7 +138,7 @@ GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
 if 'pythonanywhere' in BASE_DIR.as_posix() or not DEBUG:
     # Production (PythonAnywhere)
     GOOGLE_REDIRECT_URI = 'https://JiniyasSuthar.pythonanywhere.com/google-callback/'
-    CSRF_TRUSTED_ORIGINS = ['https://JiniyasSuthar.pythonanywhere.com']
+    CSRF_TRUSTED_ORIGINS = ['https://JiniyasSuthar.pythonanywhere.com', 'https://jiniyassuthar.pythonanywhere.com']
 else:
     # Local Development
     GOOGLE_REDIRECT_URI = 'http://127.0.0.1:8000/google-callback/'
