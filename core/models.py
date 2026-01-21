@@ -112,6 +112,7 @@ class Ticket(models.Model):
     is_used = models.BooleanField(default=False)
     purchase_time = models.DateTimeField(auto_now_add=True)
     used_time = models.DateTimeField(null=True, blank=True)
+    scanned_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='scanned_tickets')
 
     def save(self, *args, **kwargs):
         if not self.barcode_data:

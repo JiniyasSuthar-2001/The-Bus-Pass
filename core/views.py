@@ -403,6 +403,7 @@ def validate_ticket(request):
                 # MARK AS USED
                 ticket.is_used = True
                 ticket.used_time = timezone.now()
+                ticket.scanned_by = request.user
                 ticket.save()
                 messages.success(request, f"VALID TICKET! {ticket.route.source.name} -> {ticket.route.destination.name} | Date: {ticket.route.date} | Time: {ticket.route.departure_time}")
                 
