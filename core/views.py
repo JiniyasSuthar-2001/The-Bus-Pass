@@ -281,7 +281,7 @@ def user_dashboard(request):
         'active_tickets': active_tickets,
         'states': [s[0] for s in states],
         'cities_json': json.dumps(cities_data),
-        'routes_json': json.dumps(routes_data),
+        'routes_json': json.dumps(routes_data, cls=DjangoJSONEncoder),
     }
     return render(request, 'user_dashboard.html', context)
 
