@@ -23,10 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-h=z)pn9v%74*crb6*(_l$*ww5hp4iqjw-%ay!0_gq8v4a%inp@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True' or 'pythonanywhere' not in str(BASE_DIR)
 
-ALLOWED_HOSTS = ['JiniyasSuthar.pythonanywhere.com']
+ALLOWED_HOSTS = [
+    'JiniyasSuthar.pythonanywhere.com',
+    'jiniyassuthar.pythonanywhere.com',
+    '127.0.0.1',
+    'localhost',
+]
 
 
 # Application definition
@@ -137,12 +141,14 @@ GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
 
 # Dynamic Redirect URI based on environment
-if 'pythonanywhere' in BASE_DIR.as_posix() or not DEBUG:
+if 'pythonanywhere' in str(BASE_DIR):
     # Production (PythonAnywhere)
     GOOGLE_REDIRECT_URI = 'https://JiniyasSuthar.pythonanywhere.com/google-callback/'
     CSRF_TRUSTED_ORIGINS = ['https://JiniyasSuthar.pythonanywhere.com', 'https://jiniyassuthar.pythonanywhere.com']
 else:
     # Local Development
     GOOGLE_REDIRECT_URI = 'http://127.0.0.1:8000/google-callback/'
+    # Also add localhost to trusted origins just in case for local dev with newer Django versions
+    CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']
 
 

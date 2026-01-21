@@ -169,8 +169,11 @@ def google_callback(request):
         return redirect('home')
         
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
         print(f"Google Auth Error: {e}")
-        messages.error(request, "Something went wrong during Google Login.")
+        print(f"Details: {error_details}")
+        messages.error(request, f"Google Login Error: {str(e)}")
         return redirect('login')
 
 # --- Views ---
