@@ -129,7 +129,7 @@ LOGOUT_REDIRECT_URL = 'login'
 import os
 try:
     from dotenv import load_dotenv
-    load_dotenv() # Load variables from .env file if it exists
+    load_dotenv() # Load variables from .env file if it exists (Updated for deployment)
 except ImportError:
     pass
 

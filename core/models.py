@@ -85,6 +85,7 @@ class Pass(models.Model):
     is_active = models.BooleanField(default=True)
     # Unique identifier for the barcode
     barcode_data = models.CharField(max_length=100, unique=True, blank=True)
+    valid_until = models.DateField(default=timezone.now, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
