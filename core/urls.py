@@ -29,6 +29,7 @@ urlpatterns = [
     path('delete-user/<int:user_id>/', views.delete_user, name='delete_user'),
     
     # --- Conductor & Scanner ---
+    path('conductor/login/', views.conductor_login, name='conductor_login'),
     path('conductor-dashboard/', views.conductor_dashboard, name='conductor_dashboard'),
     path('verify/', views.verify_pass, name='verify_pass'), # Alias for Admin
 ]

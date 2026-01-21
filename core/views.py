@@ -267,6 +267,41 @@ def user_dashboard(request):
     }
     return render(request, 'user_dashboard.html', context)
 
+    return render(request, 'user_dashboard.html', context)
+
+def conductor_login(request):
+    """
+    Dedicated Login View for Conductors and Admins.
+    - RESTRICTS standard Users.
+    - Redirects to respective dashboards.
+    """
+    if request.user.is_authenticated:
+        if is_admin(request.user):
+            return redirect('admin_dashboard')
+        elif is_conductor(request.user):
+            return redirect('conductor_dashboard')
+        else:
+             messages.error(request, "Users must use the main login page.")
+             return redirect('home') # or logout and show error
+
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            # Security Check: Prevent Standard User login on staff portal
+            if not (is_admin(user) or is_conductor(user)):
+                messages.error(request, "Access Denied: innovative users are not allowed here.")
+                return redirect('conductor_login')
+            
+            auth_login(request, user)
+            if is_admin(user):
+                return redirect('admin_dashboard')
+            return redirect('conductor_dashboard')
+    else:
+        form = AuthenticationForm()
+    
+    return render(request, 'registration/conductor_login.html', {'form': form})
+
 @login_required
 def payment_page(request):
     """

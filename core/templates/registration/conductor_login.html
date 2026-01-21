@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 4rem auto;">
+    <div class="card text-center" style="border: 2px solid #333; background-color: #f8f9fa;">
+        <div
+            style="background-color: #333; color: white; padding: 10px; margin: -20px -20px 20px -20px; border-radius: 5px 5px 0 0;">
+            <h3 style="margin: 0;">Staff Portal</h3>
+            <small>Conductors & Admins Only</small>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group" style="text-align: left;">
+                <label for="{{ field.id_for_label }}" style="font-weight: bold;">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <small style="color: var(--danger-color);">{{ field.errors|striptags }}</small>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary btn-block"
+                style="background-color: #333; border-color: #333;">Secure Login</button>
+        </form>
+
+        <p class="mt-4">
+            <a href="{% url 'login' %}" style="color: #666;">&larr; Back to User Login</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
