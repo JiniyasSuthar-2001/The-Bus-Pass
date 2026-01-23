@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.http import JsonResponse
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -55,6 +55,20 @@ def get_barcode_image(data):
 
     encoded = base64.b64encode(rv.getvalue()).decode('utf-8')
     return f"data:image/svg+xml;base64,{encoded}"
+
+def render_barcode_image(request, barcode_data):
+    """
+    View to render barcode image directly.
+    """
+    if not barcode:
+        return HttpResponse("Barcode library missing", status=500)
+    
+    rv = BytesIO()
+    code = barcode.get('code128', barcode_data)
+    code.write(rv)
+    
+    return HttpResponse(rv.getvalue(), content_type="image/svg+xml")
+
 
 # --- Authentication Views ---
 
