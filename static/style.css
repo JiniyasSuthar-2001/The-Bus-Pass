@@ -5,11 +5,14 @@
 :root {
     --bg-color: #0f172a;
     --text-color: #f8fafc;
-    --glass-bg: rgba(20, 20, 30, 0.6); /* Darker, more opaque glass for better text readability */
+    --glass-bg: rgba(20, 20, 30, 0.6);
+    /* Darker, more opaque glass for better text readability */
     --glass-border: rgba(255, 255, 255, 0.08);
-    --primary-color: #6366f1; /* Indigo */
+    --primary-color: #6366f1;
+    /* Indigo */
     --primary-hover: #4f46e5;
-    --accent-color: #ec4899; /* Pink */
+    --accent-color: #ec4899;
+    /* Pink */
     --success-color: #10b981;
     --danger-color: #ef4444;
     --card-bg: #1e293b;
@@ -18,7 +21,8 @@
 
 body {
     background-color: var(--bg-color);
-    color: var(--text-color) !important; /* Force text color to override Tailwind defaults */
+    color: var(--text-color) !important;
+    /* Force text color to override Tailwind defaults */
     font-family: var(--font-main);
     margin: 0;
     padding: 0;
@@ -33,23 +37,8 @@ body {
     overflow-x: hidden;
 }
 
-/* Watermark Background */
-body::before {
-    content: "";
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 600px;
-    height: 600px;
-    background-image: url('/brain/793c7e3b-31c7-4ccf-ada9-068183125045/bus_pass_logo_v2_1769144155266.png'); /* Verify path in production */
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-    opacity: 0.03; /* Very subtle watermark */
-    z-index: -1;
-    pointer-events: none;
-}
+/* Watermark - Removed per user request */
+/* body::before { content: none; } */
 
 /* --- Layout --- */
 .container {
@@ -69,6 +58,10 @@ body::before {
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     margin-bottom: 2rem;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    /* Ensure interaction */
+    position: relative;
+    z-index: 10;
 }
 
 .card:hover {
@@ -82,22 +75,24 @@ body::before {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.5rem;
+    padding: 0.75rem 1.5rem;
+    /* Reduced padding */
     margin-bottom: 3rem;
     border-radius: 16px;
     background: rgba(30, 30, 40, 0.7);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* Logo Image in Navbar */
 .nav-logo-img {
-    height: 40px;
+    height: 50px;
+    /* Increased slightly for recognizability */
     width: auto;
     vertical-align: middle;
-    margin-right: 10px;
+    margin-right: 12px;
 }
 
 .nav-brand {
@@ -172,7 +167,8 @@ label {
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 500;
-    color: #cbd5e1; /* Lighter grey for labels */
+    color: #cbd5e1;
+    /* Lighter grey for labels */
 }
 
 input[type="text"],
@@ -184,7 +180,8 @@ input[type="date"] {
     padding: 0.85rem;
     border-radius: 10px;
     border: 1px solid var(--glass-border);
-    background-color: rgba(255, 255, 255, 0.05); /* Lighter input background */
+    background-color: rgba(255, 255, 255, 0.05);
+    /* Lighter input background */
     color: white;
     box-sizing: border-box;
     transition: all 0.2s;
@@ -198,15 +195,34 @@ input:focus {
 }
 
 /* --- Utilities --- */
-.text-center { text-align: center; }
-.mt-4 { margin-top: 1rem; }
-.mb-4 { margin-bottom: 1rem; }
+.text-center {
+    text-align: center;
+}
+
+.mt-4 {
+    margin-top: 1rem;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
 
 /* Flex Utilities needed if Tailwind is removed/conflicting */
-.flex { display: flex; }
-.items-center { align-items: center; }
-.justify-between { justify-content: space-between; }
-.gap-4 { gap: 1rem; }
+.flex {
+    display: flex;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.gap-4 {
+    gap: 1rem;
+}
 
 /* Badge Status */
 .badge {
@@ -234,13 +250,16 @@ input:focus {
 ::-webkit-scrollbar {
     width: 8px;
 }
+
 ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.1); 
+    background: rgba(0, 0, 0, 0.1);
 }
+
 ::-webkit-scrollbar-thumb {
-    background: #475569; 
+    background: #475569;
     border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-    background: #64748b; 
+    background: #64748b;
 }
