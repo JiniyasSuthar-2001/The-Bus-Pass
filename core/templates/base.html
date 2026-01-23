@@ -40,10 +40,10 @@
                     </a>
                 </div>
 
-                <div class="nav-links flex flex-wrap justify-center items-center gap-4 md:gap-6">
+                <div class="nav-links" style="display: flex; align-items: center; gap: 1.5rem;">
                     {% if user.is_authenticated %}
-                    <span class="text-white hidden sm:inline" style="opacity: 0.8;">Hello, <strong>{{ user.username
-                            }}</strong></span>
+                    <span style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">Hello, <strong
+                            style="color: white;">{{ user.username }}</strong></span>
 
                     {% if user.role == 'ADMIN' or user.is_superuser %}
                     <a href="{% url 'admin_dashboard' %}">Admin</a>
@@ -53,10 +53,10 @@
                     <a href="{% url 'user_dashboard' %}">My Pass</a>
                     {% endif %}
 
-                    <form action="{% url 'logout' %}" method="post" class="inline">
+                    <form action="{% url 'logout' %}" method="post" style="margin: 0;">
                         {% csrf_token %}
-                        <button type="submit" class="text-red-400 font-medium hover:text-red-300 transition"
-                            style="background: none; border: none; cursor: pointer; margin-left: 1.5rem;">Logout</button>
+                        <button type="submit" class="btn-danger"
+                            style="padding: 0.4rem 1rem; font-size: 0.85rem; border-radius: 6px;">Logout</button>
                     </form>
                     {% else %}
                     <a href="{% url 'login' %}" style="margin-right: 1rem;">Login</a>
