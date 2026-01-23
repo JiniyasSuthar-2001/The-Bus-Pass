@@ -3,7 +3,7 @@
 <div class="max-w-4xl mx-auto">
     <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
         <h2 class="text-2xl font-bold mb-4 text-gray-800">Conductor Dashboard</h2>
-        <p class="mb-4 text-gray-600">Scan User Barcode to verify pass validity.</p>
+        <p class="mb-4 text-gray-600">Scan User QR Code to verify pass validity.</p>
 
         <!-- Scanner Section -->
         <div class="relative overflow-hidden rounded-lg bg-black">
@@ -79,7 +79,7 @@
             errorDiv.classList.add('hidden');
             ticketForm.classList.add('hidden'); // Hide form if re-scanning
 
-            const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
 
             html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
                 .then(() => {

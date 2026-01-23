@@ -237,8 +237,8 @@
                 <div class="bg-white p-2 rounded-lg cursor-pointer hover:scale-105 transition transform"
                     onclick="toggleBarcode(this)">
                     <!-- Use SVG directly or img tag depending on view support -->
-                    <img src="{% url 'get_barcode_image' ticket.barcode_data %}" alt="Ticket Barcode"
-                        class="h-12 w-auto">
+                    <img src="{% url 'get_barcode_image' ticket.barcode_data %}" alt="Ticket QR Code"
+                        class="h-16 w-16 mx-auto">
                 </div>
                 {% endif %}
             </div>
@@ -246,7 +246,7 @@
             <!-- Click to expand/show full barcode modal override -->
             <div class="mt-2 text-center">
                 <button
-                    onclick="openTicketModal('{{ ticket.route.source.name }}', '{{ ticket.route.destination.name }}', '{{ ticket.route.date }}', '{{ ticket.route.departure_time }}', '{{ ticket.route.bus_number }}', '{{ ticket.route.gate }}', '{{ ticket.barcode_data }}', '{{ ticket.is_used }}', '{{ ticket.is_expired }}')"
+                    onclick="openTicketModal('{{ ticket.route.source.name }}', '{{ ticket.route.destination.name }}', '{{ ticket.route.date }}', '{{ ticket.route.departure_time }}', '{{ ticket.route.bus_number }}', '{{ ticket.route.gate }}', '{{ ticket.barcode_data }}', '{{ ticket.is_used }}', '{{ ticket.is_expired }}', '{{ ticket.id }}')"
                     class="text-xs text-gray-400 hover:text-white underline">View Details</button>
             </div>
         </div>
@@ -308,15 +308,19 @@
         </div>
 
         <!-- Footer -->
-        <div class="bg-gray-50 p-4 text-center">
+        <div class="bg-gray-50 p-4 text-center flex gap-4">
+            <a id="downloadBtn" href="#"
+                class="flex-1 bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2">
+                <span>⬇</span> PPT
+            </a>
             <button onclick="closeTicketModal()"
-                class="w-full bg-gray-200 text-gray-800 font-bold py-3 rounded-lg hover:bg-gray-300 transition">Close</button>
+                class="flex-1 bg-gray-200 text-gray-800 font-bold py-3 rounded-lg hover:bg-gray-300 transition">Close</button>
         </div>
     </div>
 </div>
 
 <script>
-    function openTicketModal(src, dest, date, time, bus, gate, code, isUsed, isExpired) {
+    function openTicketModal(src, dest, date, time, bus, gate, code, isUsed, isExpired, ticketId) {
         const modal = document.getElementById('ticketModal');
 
         // Update Text Fields
@@ -344,6 +348,9 @@
         // but we can assume the path pattern we defined in urls.py: /barcode/<code >/
         const barcodeUrl = `/barcode/${code}/`;
         document.getElementById('modalBarcodeImg').src = barcodeUrl;
+
+        // Update Download Link
+        document.getElementById('downloadBtn').href = `/download-ticket/${ticketId}/`;
 
         // Show Modal
         modal.classList.remove('hidden');
