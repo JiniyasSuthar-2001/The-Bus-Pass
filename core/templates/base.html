@@ -27,36 +27,34 @@
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
 </head>
 
-<body class="bg-gray-100 text-gray-800 font-sans">
+<body class="">
     <div class="container mx-auto px-4 py-6">
         <!-- Navigation Bar -->
-        <!-- Navigation Bar -->
-        <nav class="bg-white p-4 rounded-lg shadow-sm mb-8">
-            <div class="flex flex-col md:flex-row justify-between items-center">
+        <nav class="navbar">
+            <div class="flex flex-col md:flex-row justify-between items-center w-full">
                 <div class="mb-4 md:mb-0">
-                    <a href="{% url 'home' %}"
-                        class="text-2xl font-bold text-indigo-600 hover:text-indigo-700 transition">BusPass</a>
+                    <a href="{% url 'home' %}" class="nav-brand">
+                        <img src="{% static 'logo.png' %}" alt="Bus Pass Logo" class="nav-logo-img">
+                        BusPass
+                    </a>
                 </div>
 
-                <div class="flex flex-wrap justify-center items-center gap-4 md:gap-6">
+                <div class="nav-links flex flex-wrap justify-center items-center gap-4 md:gap-6">
                     {% if user.is_authenticated %}
-                    <span class="text-gray-600 hidden sm:inline">Hello, <strong>{{ user.username }}</strong></span>
+                    <span class="text-white hidden sm:inline" style="opacity: 0.8;">Hello, <strong>{{ user.username }}</strong></span>
 
                     {% if user.role == 'ADMIN' or user.is_superuser %}
-                    <a href="{% url 'admin_dashboard' %}"
-                        class="font-medium text-gray-700 hover:text-indigo-600 transition">Admin</a>
+                    <a href="{% url 'admin_dashboard' %}">Admin</a>
                     {% elif user.role == 'CONDUCTOR' %}
-                    <a href="{% url 'conductor_dashboard' %}"
-                        class="font-medium text-gray-700 hover:text-indigo-600 transition">Scanner</a>
+                    <a href="{% url 'conductor_dashboard' %}">Scanner</a>
                     {% else %}
-                    <a href="{% url 'user_dashboard' %}"
-                        class="font-medium text-gray-700 hover:text-indigo-600 transition">My Pass</a>
+                    <a href="{% url 'user_dashboard' %}">My Pass</a>
                     {% endif %}
 
                     <form action="{% url 'logout' %}" method="post" class="inline">
                         {% csrf_token %}
                         <button type="submit"
-                            class="text-red-500 font-medium hover:text-red-700 transition">Logout</button>
+                            class="text-red-400 font-medium hover:text-red-300 transition" style="background: none; border: none; cursor: pointer; margin-left: 1.5rem;">Logout</button>
                     </form>
                     {% else %}
                     <a href="{% url 'login' %}"

@@ -267,9 +267,6 @@ def user_dashboard(request):
                 return redirect('user_dashboard')
             else:
                 messages.error(request, "Insufficient balance.")
-    else:
-        form = RefillForm()
-
     # Fetch Payment History & Active Tickets
     payments = Payment.objects.filter(user=request.user).order_by('-timestamp')
     active_tickets = Ticket.objects.filter(user=request.user, is_used=False).order_by('-purchase_time')
@@ -401,18 +398,28 @@ def validate_ticket(request):
         try:
             ticket = Ticket.objects.get(barcode_data=barcode_data)
             
-            if ticket.is_used:
-                messages.error(request, f"TICKET USED! Travelled on: {ticket.used_time}")
+            if ticket.is_expired:
+                messages.error(request, f"EXPIRED! Bus Left Station > 10 mins ago. (Valid until: {ticket.route.departure_time})")
+            elif ticket.is_used:
+                messages.error(request, f"TICKET ALREADY USED! Scanned at: {ticket.used_time.strftime('%H:%M')}")
             else:
                 # MARK AS USED
                 ticket.is_used = True
                 ticket.used_time = timezone.now()
                 ticket.scanned_by = request.user
                 ticket.save()
-                messages.success(request, f"VALID TICKET! {ticket.route.source.name} -> {ticket.route.destination.name} | Date: {ticket.route.date} | Time: {ticket.route.departure_time}")
+                messages.success(request, f"VALID TICKET! Seat: {ticket.route.bus_number} | Dest: {ticket.route.destination.name}")
                 
         except Ticket.DoesNotExist:
-            messages.error(request, "INVALID TICKET! Ticket not found.")
+            # Check if it's a Pass
+            try:
+                found_pass = Pass.objects.get(barcode_data=barcode_data)
+                if found_pass.is_valid:
+                    messages.success(request, f"VALID MONTHLY PASS! User: {found_pass.user.username}")
+                else:
+                    messages.error(request, f"EXPIRED PASS! Valid until: {found_pass.valid_until}")
+            except Pass.DoesNotExist:
+                messages.error(request, "INVALID BARCODE! No ticket or pass found.")
         except Exception as e:
             messages.error(request, f"Error: {str(e)}")
             

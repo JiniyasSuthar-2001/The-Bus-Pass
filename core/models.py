@@ -90,10 +90,11 @@ class Pass(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Auto-generate a unique UUID for barcode_data if not present.
-        """ ""
+        Auto-generate a unique 18-char string for barcode_data if not present.
+        """
         if not self.barcode_data:
-            self.barcode_data = str(uuid.uuid4())
+            import secrets
+            self.barcode_data = secrets.token_hex(9) # 18 characters
         super().save(*args, **kwargs)
 
     @property
@@ -114,9 +115,25 @@ class Ticket(models.Model):
     used_time = models.DateTimeField(null=True, blank=True)
     scanned_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='scanned_tickets')
 
+    @property
+    def is_expired(self):
+        """
+        Ticket expires 10 minutes after bus departure on the scheduled date.
+        """
+        from datetime import datetime, timedelta
+        
+        # Combine ticket date and departure time
+        departure_dt = datetime.combine(self.route.date, self.route.departure_time)
+        # Make it aware (using system timezone logic)
+        departure_dt = timezone.make_aware(departure_dt, timezone.get_current_timezone())
+        
+        expires_at = departure_dt + timedelta(minutes=10)
+        return timezone.now() > expires_at
+
     def save(self, *args, **kwargs):
         if not self.barcode_data:
-            self.barcode_data = str(uuid.uuid4())
+            import secrets
+            self.barcode_data = secrets.token_hex(9) # 18 characters
         super().save(*args, **kwargs)
 
     def __str__(self):
