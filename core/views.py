@@ -57,17 +57,70 @@ def get_barcode_image(data):
     return f"data:image/svg+xml;base64,{encoded}"
 
 def render_barcode_image(request, barcode_data):
-    """
-    View to render barcode image directly.
-    """
-    if not barcode:
-        return HttpResponse("Barcode library missing", status=500)
-    
-    rv = BytesIO()
-    code = barcode.get('code128', barcode_data)
-    code.write(rv)
-    
     return HttpResponse(rv.getvalue(), content_type="image/svg+xml")
+
+@login_required
+def download_ticket_ppt(request, ticket_id):
+    """
+    Generate and download a PPTx file for the ticket.
+    """
+    try:
+        from pptx import Presentation
+        from pptx.util import Inches, Pt
+        from pptx.dml.color import RGBColor
+    except ImportError:
+        return HttpResponse("python-pptx library not installed", status=500)
+
+    ticket = get_object_or_404(Ticket, id=ticket_id, user=request.user)
+    
+    prs = Presentation()
+    slide_layout = prs.slide_layouts[5] # Blank layout
+    slide = prs.slides.add_slide(slide_layout)
+    
+    # Title
+    title = slide.shapes.title
+    title.text = "Bus Pass Ticket"
+    
+    # Add Text Details
+    tf = slide.shapes.add_textbox(Inches(1), Inches(1.5), Inches(5), Inches(3)).text_frame
+    tf.text = f"Route: {ticket.route.source.name} to {ticket.route.destination.name}"
+    
+    p = tf.add_paragraph()
+    p.text = f"Date: {ticket.route.date}"
+    p = tf.add_paragraph()
+    p.text = f"Time: {ticket.route.departure_time}"
+    p = tf.add_paragraph()
+    p.text = f"Bus No: {ticket.route.bus_number}"
+    p = tf.add_paragraph()
+    p.text = f"Gate: {ticket.route.gate}"
+    p = tf.add_paragraph()
+    p.text = f"User: {ticket.user.username}"
+    
+    # Add QR Code Image
+    if barcode:
+        # Generate SVG QR/Barcode manually or using qrcode lib if imported (we use barcode lib here as fallback or primary)
+        # Note: python-pptx doesn't support SVG well, so we might need PNG.
+        # But for now, let's try to grab whatever we can. If 'qrcode' lib is available (preferred)
+        pass 
+        
+    # Re-implement using qrcode lib if available for PNG support which is better for PPTX
+    try:
+        import qrcode
+        img = qrcode.make(ticket.barcode_data)
+        img_stream = BytesIO()
+        img.save(img_stream)
+        slide.shapes.add_picture(img_stream, Inches(6), Inches(2), Inches(3), Inches(3))
+    except ImportError:
+        pass
+
+    # Prepare Response
+    ppt_stream = BytesIO()
+    prs.save(ppt_stream)
+    ppt_stream.seek(0)
+    
+    response = HttpResponse(ppt_stream.read(), content_type='application/vnd.openxmlformats-officedocument.presentationml.presentation')
+    response['Content-Disposition'] = f'attachment; filename="Ticket_{ticket.id}.pptx"'
+    return response
 
 
 # --- Authentication Views ---
