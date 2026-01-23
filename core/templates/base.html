@@ -29,6 +29,7 @@
 
 <body class="">
     <div class="container mx-auto px-4 py-6">
+        {% block navbar %}
         <!-- Navigation Bar -->
         <nav class="navbar">
             <div class="flex flex-col md:flex-row justify-between items-center w-full">
@@ -41,7 +42,8 @@
 
                 <div class="nav-links flex flex-wrap justify-center items-center gap-4 md:gap-6">
                     {% if user.is_authenticated %}
-                    <span class="text-white hidden sm:inline" style="opacity: 0.8;">Hello, <strong>{{ user.username }}</strong></span>
+                    <span class="text-white hidden sm:inline" style="opacity: 0.8;">Hello, <strong>{{ user.username
+                            }}</strong></span>
 
                     {% if user.role == 'ADMIN' or user.is_superuser %}
                     <a href="{% url 'admin_dashboard' %}">Admin</a>
@@ -53,18 +55,17 @@
 
                     <form action="{% url 'logout' %}" method="post" class="inline">
                         {% csrf_token %}
-                        <button type="submit"
-                            class="text-red-400 font-medium hover:text-red-300 transition" style="background: none; border: none; cursor: pointer; margin-left: 1.5rem;">Logout</button>
+                        <button type="submit" class="text-red-400 font-medium hover:text-red-300 transition"
+                            style="background: none; border: none; cursor: pointer; margin-left: 1.5rem;">Logout</button>
                     </form>
                     {% else %}
-                    <a href="{% url 'login' %}"
-                        class="font-medium text-gray-700 hover:text-indigo-600 transition">Login</a>
-                    <a href="{% url 'register' %}"
-                        class="bg-indigo-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-indigo-700 transition shadow-md">Register</a>
+                    <a href="{% url 'login' %}" style="margin-right: 1rem;">Login</a>
+                    <a href="{% url 'register' %}" class="btn btn-primary">Register</a>
                     {% endif %}
                 </div>
             </div>
         </nav>
+        {% endblock %}
 
         <!-- Main Content Area -->
         <main>
