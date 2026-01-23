@@ -19,11 +19,13 @@
             <div class="text-left">
                 <label class="block text-xs font-bold text-gray-500 uppercase">From</label>
                 <div class="flex gap-2">
-                    <select id="src_state" class="w-1/2 p-2 border rounded text-sm" onchange="filterCities('src')">
+                    <select id="src_state" class="w-1/2 p-2 border rounded text-sm text-gray-900"
+                        onchange="filterCities('src')">
                         <option value="">State</option>
                         {% for s in states %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
                     </select>
-                    <select id="src_city" class="w-1/2 p-2 border rounded text-sm" disabled onchange="findRoutes()">
+                    <select id="src_city" class="w-1/2 p-2 border rounded text-sm text-gray-900" disabled
+                        onchange="findRoutes()">
                         <option value="">City</option>
                     </select>
                 </div>
@@ -33,11 +35,13 @@
             <div class="text-left">
                 <label class="block text-xs font-bold text-gray-500 uppercase">To</label>
                 <div class="flex gap-2">
-                    <select id="dest_state" class="w-1/2 p-2 border rounded text-sm" onchange="filterCities('dest')">
+                    <select id="dest_state" class="w-1/2 p-2 border rounded text-sm text-gray-900"
+                        onchange="filterCities('dest')">
                         <option value="">State</option>
                         {% for s in states %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
                     </select>
-                    <select id="dest_city" class="w-1/2 p-2 border rounded text-sm" disabled onchange="findRoutes()">
+                    <select id="dest_city" class="w-1/2 p-2 border rounded text-sm text-gray-900" disabled
+                        onchange="findRoutes()">
                         <option value="">City</option>
                     </select>
                 </div>
@@ -169,7 +173,7 @@
             {% csrf_token %}
             <div class="mb-4">
                 <input type="number" name="amount" placeholder="Amount (₹)" required
-                    class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                    class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-gray-900">
             </div>
             <button type="submit"
                 class="w-full bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 transition shadow-md">Add

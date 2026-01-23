@@ -21,8 +21,7 @@
 
 body {
     background-color: var(--bg-color);
-    color: var(--text-color) !important;
-    /* Force text color to override Tailwind defaults */
+    color: var(--text-color);
     font-family: var(--font-main);
     margin: 0;
     padding: 0;
@@ -68,6 +67,28 @@ body {
     transform: translateY(-4px);
     box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4);
     border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Fix for Tailwind white cards text color */
+.bg-white {
+    color: #1e293b !important;
+}
+
+.bg-white h1,
+.bg-white h2,
+.bg-white h3,
+.bg-white p,
+.bg-white label,
+.bg-white table,
+.bg-white th,
+.bg-white td {
+    color: #1e293b !important;
+}
+
+.bg-white select,
+.bg-white input {
+    color: #1e293b !important;
+    border-color: #cbd5e1 !important;
 }
 
 /* --- Navigation --- */
