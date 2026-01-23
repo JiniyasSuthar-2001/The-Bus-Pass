@@ -81,7 +81,10 @@ body {
 .bg-white label,
 .bg-white table,
 .bg-white th,
-.bg-white td {
+.bg-white td,
+.bg-white span,
+.bg-white div,
+.bg-white a {
     color: #1e293b !important;
 }
 

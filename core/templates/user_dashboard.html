@@ -20,12 +20,12 @@
                 <label class="block text-xs font-bold text-gray-500 uppercase">From</label>
                 <div class="flex gap-2">
                     <select id="src_state" class="w-1/2 p-2 border rounded text-sm text-gray-900"
-                        onchange="filterCities('src')">
+                        style="color: black !important;" onchange="filterCities('src')">
                         <option value="">State</option>
                         {% for s in states %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
                     </select>
-                    <select id="src_city" class="w-1/2 p-2 border rounded text-sm text-gray-900" disabled
-                        onchange="findRoutes()">
+                    <select id="src_city" class="w-1/2 p-2 border rounded text-sm text-gray-900"
+                        style="color: black !important;" disabled onchange="findRoutes()">
                         <option value="">City</option>
                     </select>
                 </div>
@@ -36,12 +36,12 @@
                 <label class="block text-xs font-bold text-gray-500 uppercase">To</label>
                 <div class="flex gap-2">
                     <select id="dest_state" class="w-1/2 p-2 border rounded text-sm text-gray-900"
-                        onchange="filterCities('dest')">
+                        style="color: black !important;" onchange="filterCities('dest')">
                         <option value="">State</option>
                         {% for s in states %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
                     </select>
-                    <select id="dest_city" class="w-1/2 p-2 border rounded text-sm text-gray-900" disabled
-                        onchange="findRoutes()">
+                    <select id="dest_city" class="w-1/2 p-2 border rounded text-sm text-gray-900"
+                        style="color: black !important;" disabled onchange="findRoutes()">
                         <option value="">City</option>
                     </select>
                 </div>
@@ -173,7 +173,8 @@
             {% csrf_token %}
             <div class="mb-4">
                 <input type="number" name="amount" placeholder="Amount (₹)" required
-                    class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-gray-900">
+                    class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-gray-900"
+                    style="color: black !important;">
             </div>
             <button type="submit"
                 class="w-full bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 transition shadow-md">Add
@@ -288,21 +289,21 @@
 <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
     <h2 class="text-xl font-bold mb-4">Payment & Trip History</h2>
     <div class="overflow-x-auto">
-        <table class="w-full text-left">
-            <thead class="bg-gray-100">
-                <tr class="border-b">
-                    <th class="p-4">Date & Time</th>
-                    <th class="p-4">Details</th>
-                    <th class="p-4">Type</th>
-                    <th class="p-4">Amount</th>
+        <table class="w-full text-left text-gray-900 border-collapse border border-gray-200">
+            <thead class="bg-gray-100 border-b-2 border-gray-300">
+                <tr>
+                    <th class="p-4 border font-semibold">Date & Time</th>
+                    <th class="p-4 border font-semibold">Details</th>
+                    <th class="p-4 border font-semibold">Type</th>
+                    <th class="p-4 border font-semibold">Amount</th>
                 </tr>
             </thead>
             <tbody>
                 {% for p in payments %}
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-4 text-gray-600">{{ p.timestamp|date:"M d, Y H:i" }}</td>
-                    <td class="p-4 font-medium">{{ p.description }}</td>
-                    <td class="p-4">
+                <tr class="border-b hover:bg-gray-50 border-gray-200">
+                    <td class="p-4 text-gray-600 border border-gray-200">{{ p.timestamp|date:"M d, Y H:i" }}</td>
+                    <td class="p-4 font-medium border border-gray-200">{{ p.description }}</td>
+                    <td class="p-4 border border-gray-200">
                         {% if p.transaction_type == 'REFILL' %}
                         <span class="text-green-600 font-bold">Refill</span>
                         {% else %}
@@ -310,13 +311,14 @@
                         {% endif %}
                     </td>
                     <td
-                        class="p-4 {% if p.transaction_type == 'REFILL' %}text-green-600{% else %}text-red-600{% endif %} font-bold">
+                        class="p-4 border border-gray-200 {% if p.transaction_type == 'REFILL' %}text-green-600{% else %}text-red-600{% endif %} font-bold">
                         {% if p.transaction_type == 'REFILL' %}+{% else %}-{% endif %}₹{{ p.amount }}
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4" class="p-6 text-center text-gray-500">No transactions found.</td>
+                    <td colspan="4" class="p-6 text-center text-gray-500 border border-gray-200">No transactions found.
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
