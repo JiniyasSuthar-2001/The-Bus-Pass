@@ -257,32 +257,108 @@
     {% endif %}
 </div>
 
-<!-- Simple Ticket Modal Script -->
+<!-- Ticket Details Modal -->
+<div id="ticketModal"
+    class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative animate-fade-in-up">
+
+        <!-- Header -->
+        <div class="bg-indigo-600 p-4 text-white text-center relative">
+            <h3 class="text-xl font-bold" id="modalRoute">Route</h3>
+            <button onclick="closeTicketModal()" class="absolute top-4 right-4 text-white hover:text-gray-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Ticket Body -->
+        <div class="p-6 space-y-4">
+
+            <!-- Info Grid -->
+            <div class="grid grid-cols-2 gap-4 text-center">
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide">Date & Time</p>
+                    <p class="font-bold text-gray-800 text-sm" id="modalTime">--</p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide">Bus No</p>
+                    <p class="font-bold text-gray-800 text-sm" id="modalBus">--</p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide">Gate</p>
+                    <p class="font-bold text-gray-800 text-sm" id="modalGate">--</p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide">Status</p>
+                    <p class="font-bold text-green-600 text-sm" id="modalStatus">Valid</p>
+                </div>
+            </div>
+
+            <!-- Barcode Section -->
+            <div class="text-center mt-6 border-t pt-6 border-gray-100">
+                <p class="text-xs text-gray-400 mb-2 uppercase tracking-widest">Scan for Boarding</p>
+                <div class="bg-white p-2 inline-block rounded-lg active-barcode-wrapper">
+                    <!-- Image tag will be updated by JS -->
+                    <img id="modalBarcodeImg" src="" alt="Barcode" class="h-24 mx-auto w-auto opacity-100 block">
+                    <p class="text-xs font-mono text-gray-500 mt-1 tracking-widest" id="modalBarcodeText">123456789</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="bg-gray-50 p-4 text-center">
+            <button onclick="closeTicketModal()"
+                class="w-full bg-gray-200 text-gray-800 font-bold py-3 rounded-lg hover:bg-gray-300 transition">Close</button>
+        </div>
+    </div>
+</div>
+
 <script>
     function openTicketModal(src, dest, date, time, bus, gate, code, isUsed, isExpired) {
-        // Reuse existing modal logic or create simple alert for now if complex modal is broken
-        // For this pass, we rely on the visual card unless the user really needs the big modal.
-        // Ideally we inject values into the existing modal HTML structure if it exists.
-        // Let's assume the previous modal HTML structure is present at bottom of file or we can inject it.
-        // For safety, re-implementing a simple modal show here or assuming the existing one works.
-
-        // Quick fix: Update the existing modal elements if they exist
         const modal = document.getElementById('ticketModal');
-        if (modal) {
-            document.getElementById('modalRoute').textContent = `${src} to ${dest}`;
-            document.getElementById('modalTime').textContent = `${date} at ${time}`;
-            document.getElementById('modalBus').textContent = bus;
-            document.getElementById('modalGate').textContent = gate;
-            document.getElementById('modalBarcodeText').textContent = code;
 
-            // Re-run barcode generation if JsBarcode is loaded
-            if (typeof JsBarcode !== 'undefined') {
-                JsBarcode("#modalBarcode", code, { format: "CODE128", lineColor: "#000", height: 50, displayValue: false });
-            }
+        // Update Text Fields
+        document.getElementById('modalRoute').textContent = `${src} ➝ ${dest}`;
+        document.getElementById('modalTime').textContent = `${date} | ${time}`;
+        document.getElementById('modalBus').textContent = bus;
+        document.getElementById('modalGate').textContent = gate;
+        document.getElementById('modalBarcodeText').textContent = code;
 
-            modal.classList.remove('hidden');
+        // Update Status
+        const statusEl = document.getElementById('modalStatus');
+        if (isUsed === 'True') {
+            statusEl.textContent = "Checked";
+            statusEl.className = "font-bold text-green-600 text-sm";
+        } else if (isExpired === 'True') {
+            statusEl.textContent = "Expired";
+            statusEl.className = "font-bold text-red-600 text-sm";
+        } else {
+            statusEl.textContent = "Valid";
+            statusEl.className = "font-bold text-indigo-600 text-sm";
         }
+
+        // Update Barcode Image
+        // Construct URL manually since we can't use 'url' tag in JS easily without placeholders, 
+        // but we can assume the path pattern we defined in urls.py: /barcode/<code >/
+        const barcodeUrl = `/barcode/${code}/`;
+        document.getElementById('modalBarcodeImg').src = barcodeUrl;
+
+        // Show Modal
+        modal.classList.remove('hidden');
     }
+
+    function closeTicketModal() {
+        document.getElementById('ticketModal').classList.add('hidden');
+    }
+
+    // Close on click outside
+    document.getElementById('ticketModal').addEventListener('click', function (e) {
+        if (e.target === this) {
+            closeTicketModal();
+        }
+    });
 </script>
 
 <!-- Payment History Section -->
