@@ -1,35 +1,72 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block navbar %}{% endblock %}
 
 {% block content %}
-<div style="max-width: 400px; margin: 4rem auto;">
-    <div class="card text-center">
-        <h2 style="margin-bottom: 2rem;">Welcome Back</h2>
-        <form method="post">
-            {% csrf_token %}
-            <!-- Manually rendering form fields for better control over styling -->
-            {% for field in form %}
-            <div class="form-group" style="text-align: left;">
-                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {{ field }}
-                {% if field.errors %}
-                <small style="color: var(--danger-color);">{{ field.errors|striptags }}</small>
-                {% endif %}
-            </div>
-            {% endfor %}
-            <button type="submit" class="btn btn-primary btn-block">Login</button>
-        </form>
+<div style="min-height: 80vh; display: flex; align-items: center; justify-content: center;">
+    <div style="width: 100%; max-width: 420px; text-align: center;">
 
-        <div style="margin-top: 1rem; text-align: center;">
-            <p style="color: #666; margin-bottom: 0.5rem;">OR</p>
-            <a href="{% url 'google_login' %}" style="display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; border: 1px solid #ddd; border-radius: 5px; text-decoration: none; color: #333; background-color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: 100%; box-sizing: border-box;">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width: 18px; height: 18px; margin-right: 10px;">
-                Login with Google
-            </a>
+        <!-- Logo & Slogan Section -->
+        <div style="margin-bottom: 2rem;">
+            <img src="{% static 'logo.png' %}" alt="Bus Pass Logo"
+                style="height: 100px; width: auto; margin-bottom: 1rem; filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.4));">
+            <h1
+                style="font-size: 2.5rem; font-weight: 800; background: linear-gradient(to right, #6366f1, #ec4899); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">
+                BusPass
+            </h1>
+            <p style="font-size: 1.1rem; color: #cbd5e1; margin-top: 0.5rem; font-weight: 500; letter-spacing: 0.5px;">
+                Fast, Easy and Proper Gen-Z 🚀
+            </p>
         </div>
 
-        <p class="mt-4">
-            Don't have an account? <a href="{% url 'register' %}" style="color: var(--accent-color);">Register here</a>
-        </p>
+        <!-- Login Card -->
+        <div class="card" style="padding: 2.5rem; text-align: left; backdrop-filter: blur(20px);">
+            <form method="post">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="badge badge-danger" style="margin-bottom: 1rem; text-align: center; display: block;">
+                    {{ form.non_field_errors|striptags }}
+                </div>
+                {% endif %}
+
+                {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}" style="font-size: 0.9rem; margin-bottom: 0.5rem;">{{
+                        field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <small style="color: var(--danger-color); display: block; margin-top: 0.25rem;">{{
+                        field.errors|striptags }}</small>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <button type="submit" class="btn btn-primary btn-block" style="margin-top: 1.5rem; font-size: 1.1rem;">
+                    Sign In
+                </button>
+            </form>
+
+            <!-- Registration & ALT Actions -->
+            <div
+                style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--glass-border); text-align: center;">
+                <p style="color: #94a3b8; margin-bottom: 1rem; font-size: 0.9rem;">Don't have an account?</p>
+                <a href="{% url 'register' %}" class="btn btn-block"
+                    style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2);">
+                    Create Account
+                </a>
+
+                <div style="margin-top: 1.5rem;">
+                    <a href="{% url 'google_login' %}"
+                        style="display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px; background: white; color: #333; border-radius: 8px; text-decoration: none; font-weight: 600; transition: transform 0.2s;">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"
+                            style="width: 18px; height: 18px;">
+                        Continue with Google
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
