@@ -8,11 +8,10 @@ from django.utils import timezone
 from .forms import CustomUserCreationForm, RefillForm
 from .models import CustomUser, Pass, Payment, Ticket, City, Route
 try:
-    import barcode
+    import qrcode
+    from qrcode.image.svg import SvgImage
 except ImportError:
-    barcode = None
-
-# from barcode.writer import ImageWriter # Removed for performance
+    qrcode = None
 from io import BytesIO
 import base64
 from datetime import timedelta
@@ -42,22 +41,29 @@ def is_conductor(user):
 
 def get_barcode_image(data):
     """
-    Generate a helper function to create a Barcode image (Code128).
+    Generate a helper function to create a QR Code image.
     Returns a base64 encoded string for embedding in HTML.
     """
-    if not barcode:
+    if not qrcode:
         return ""
-    rv = BytesIO()
-    code = barcode.get('code128', data) # Defaults to SVGWriter which is faster
-    code.write(rv)
-    encoded = base64.b64encode(rv.getvalue()).decode('utf-8')
-    return f"data:image/svg+xml;base64,{encoded}"
-
-    encoded = base64.b64encode(rv.getvalue()).decode('utf-8')
-    return f"data:image/svg+xml;base64,{encoded}"
+    
+    img = qrcode.make(data)
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    encoded = base64.b64encode(buffer.getvalue()).decode('utf-8')
+    return f"data:image/png;base64,{encoded}"
 
 def render_barcode_image(request, barcode_data):
-    return HttpResponse(rv.getvalue(), content_type="image/svg+xml")
+    """
+    View to render a QR code image directly.
+    """
+    if not qrcode:
+        return HttpResponse("QRCode library not installed", status=500)
+        
+    img = qrcode.make(barcode_data)
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    return HttpResponse(buffer.getvalue(), content_type="image/png")
 
 @login_required
 def download_ticket_ppt(request, ticket_id):
@@ -97,21 +103,14 @@ def download_ticket_ppt(request, ticket_id):
     p.text = f"User: {ticket.user.username}"
     
     # Add QR Code Image
-    if barcode:
-        # Generate SVG QR/Barcode manually or using qrcode lib if imported (we use barcode lib here as fallback or primary)
-        # Note: python-pptx doesn't support SVG well, so we might need PNG.
-        # But for now, let's try to grab whatever we can. If 'qrcode' lib is available (preferred)
-        pass 
-        
-    # Re-implement using qrcode lib if available for PNG support which is better for PPTX
-    try:
-        import qrcode
-        img = qrcode.make(ticket.barcode_data)
-        img_stream = BytesIO()
-        img.save(img_stream)
-        slide.shapes.add_picture(img_stream, Inches(6), Inches(2), Inches(3), Inches(3))
-    except ImportError:
-        pass
+    if qrcode:
+        try:
+            img = qrcode.make(ticket.barcode_data)
+            img_stream = BytesIO()
+            img.save(img_stream)
+            slide.shapes.add_picture(img_stream, Inches(6), Inches(2), Inches(3), Inches(3))
+        except Exception as e:
+            print(f"Error adding QR to PPT: {e}")
 
     # Prepare Response
     ppt_stream = BytesIO()

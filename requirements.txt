@@ -1,5 +1,6 @@
 Django
 python-dotenv
-python-barcode
+qrcode[pil]
+pillow
 razorpay
 requests
