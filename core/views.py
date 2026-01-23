@@ -66,59 +66,84 @@ def render_barcode_image(request, barcode_data):
     return HttpResponse(buffer.getvalue(), content_type="image/png")
 
 @login_required
-def download_ticket_ppt(request, ticket_id):
+def download_ticket_pdf(request, ticket_id):
     """
-    Generate and download a PPTx file for the ticket.
+    Generate and download a PDF file for the ticket using ReportLab.
     """
-    try:
-        from pptx import Presentation
-        from pptx.util import Inches, Pt
-        from pptx.dml.color import RGBColor
-    except ImportError:
-        return HttpResponse("python-pptx library not installed", status=500)
-
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib import colors
+    from reportlab.lib.units import inch
+    
     ticket = get_object_or_404(Ticket, id=ticket_id, user=request.user)
     
-    prs = Presentation()
-    slide_layout = prs.slide_layouts[5] # Blank layout
-    slide = prs.slides.add_slide(slide_layout)
+    # Create valid filename
+    filename = f"Ticket_{ticket.id}.pdf"
     
-    # Title
-    title = slide.shapes.title
-    title.text = "Bus Pass Ticket"
+    # Create the HTTP response
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
     
-    # Add Text Details
-    tf = slide.shapes.add_textbox(Inches(1), Inches(1.5), Inches(5), Inches(3)).text_frame
-    tf.text = f"Route: {ticket.route.source.name} to {ticket.route.destination.name}"
+    # Create the PDF object, using the response object as its "file."
+    p = canvas.Canvas(response, pagesize=letter)
+    width, height = letter
     
-    p = tf.add_paragraph()
-    p.text = f"Date: {ticket.route.date}"
-    p = tf.add_paragraph()
-    p.text = f"Time: {ticket.route.departure_time}"
-    p = tf.add_paragraph()
-    p.text = f"Bus No: {ticket.route.bus_number}"
-    p = tf.add_paragraph()
-    p.text = f"Gate: {ticket.route.gate}"
-    p = tf.add_paragraph()
-    p.text = f"User: {ticket.user.username}"
+    # -- Graphic Design --
     
-    # Add QR Code Image
+    # Header
+    p.setFillColor(colors.darkblue)
+    p.setFont("Helvetica-Bold", 24)
+    p.drawString(1 * inch, height - 1 * inch, "BUS PASS TICKET")
+    
+    p.setStrokeColor(colors.gray)
+    p.line(1 * inch, height - 1.2 * inch, width - 1 * inch, height - 1.2 * inch)
+    
+    # Details
+    y_pos = height - 2 * inch
+    p.setFillColor(colors.black)
+    p.setFont("Helvetica", 14)
+    
+    details = [
+        f"Route: {ticket.route.source.name} to {ticket.route.destination.name}",
+        f"Date: {ticket.route.date}",
+        f"Time: {ticket.route.departure_time}",
+        f"Bus No: {ticket.route.bus_number}",
+        f"Gate: {ticket.route.gate}",
+        f"User: {ticket.user.username}"
+    ]
+    
+    for line in details:
+        p.drawString(1 * inch, y_pos, line)
+        y_pos -= 0.4 * inch
+        
+    # QR Code
     if qrcode:
         try:
+            # Generate QR Code Image
             img = qrcode.make(ticket.barcode_data)
-            img_stream = BytesIO()
-            img.save(img_stream)
-            slide.shapes.add_picture(img_stream, Inches(6), Inches(2), Inches(3), Inches(3))
+            
+            # Save to temporary stream
+            from reportlab.lib.utils import ImageReader
+            img_buffer = BytesIO()
+            img.save(img_buffer, format="PNG")
+            img_buffer.seek(0)
+            
+            # Draw Image
+            p.drawImage(ImageReader(img_buffer), 4 * inch, height - 4.5 * inch, width=2.5*inch, height=2.5*inch)
+            p.drawString(4.5 * inch, height - 4.8 * inch, ticket.barcode_data)
+            
         except Exception as e:
-            print(f"Error adding QR to PPT: {e}")
+            p.drawString(1 * inch, y_pos - 1 * inch, f"Error generating QR: {str(e)}")
+            
+    # Footer
+    p.setFont("Helvetica-Oblique", 10)
+    p.setFillColor(colors.gray)
+    p.drawString(1 * inch, 1 * inch, "Thank you for traveling with us.")
 
-    # Prepare Response
-    ppt_stream = BytesIO()
-    prs.save(ppt_stream)
-    ppt_stream.seek(0)
+    # Close the PDF object cleanly, and we're done.
+    p.showPage()
+    p.save()
     
-    response = HttpResponse(ppt_stream.read(), content_type='application/vnd.openxmlformats-officedocument.presentationml.presentation')
-    response['Content-Disposition'] = f'attachment; filename="Ticket_{ticket.id}.pptx"'
     return response
 
 

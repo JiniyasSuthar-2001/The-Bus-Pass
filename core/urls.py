@@ -40,5 +40,5 @@ urlpatterns = [
     path('buy-ticket/', views.buy_ticket, name='buy_ticket'),
     path('verify/', views.verify_pass, name='verify_pass'), # Alias for Admin
     path('barcode/<str:barcode_data>/', views.render_barcode_image, name='get_barcode_image'),
-    path('download-ticket/<int:ticket_id>/', views.download_ticket_ppt, name='download_ticket_ppt'),
+    path('download-ticket/<int:ticket_id>/', views.download_ticket_pdf, name='download_ticket_pdf'),
 ]
