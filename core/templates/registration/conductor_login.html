@@ -1,8 +1,37 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+    /* Specific overrides for the light-themed Admin/Staff login card */
+    .staff-login-card {
+        color: #333 !important;
+        /* Force black text for the card content */
+    }
+
+    .staff-login-card input {
+        color: #000 !important;
+        /* Black text for inputs */
+        background-color: #fff !important;
+        /* White background */
+        border: 1px solid #ced4da !important;
+    }
+
+    .staff-login-card input:focus {
+        border-color: #80bdff !important;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .25) !important;
+    }
+
+    .staff-login-card label {
+        color: #333 !important;
+    }
+
+    .staff-login-card small {
+        color: #6c757d !important;
+    }
+</style>
+
 <div style="max-width: 400px; margin: 4rem auto;">
-    <div class="card text-center" style="border: 2px solid #333; background-color: #f8f9fa;">
+    <div class="card text-center staff-login-card" style="border: 2px solid #333; background-color: #f8f9fa;">
         <div
             style="background-color: #333; color: white; padding: 10px; margin: -20px -20px 20px -20px; border-radius: 5px 5px 0 0;">
             <h3 style="margin: 0;">Staff Portal</h3>
@@ -16,7 +45,7 @@
                 <label for="{{ field.id_for_label }}" style="font-weight: bold;">{{ field.label }}</label>
                 {{ field }}
                 {% if field.errors %}
-                <small style="color: var(--danger-color);">{{ field.errors|striptags }}</small>
+                <small style="color: #dc3545 !important;">{{ field.errors|striptags }}</small>
                 {% endif %}
             </div>
             {% endfor %}

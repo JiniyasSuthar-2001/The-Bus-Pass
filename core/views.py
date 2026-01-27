@@ -490,29 +490,29 @@ def validate_ticket(request):
             ticket = Ticket.objects.get(barcode_data=barcode_data)
             
             if ticket.is_expired:
-                messages.error(request, f"EXPIRED! Bus Left Station > 10 mins ago. (Valid until: {ticket.route.departure_time})")
+                messages.error(request, f"EXPIRED! Bus Left Station > 10 mins ago. (Valid until: {ticket.route.departure_time})", extra_tags='scan_result')
             elif ticket.is_used:
-                messages.error(request, f"TICKET ALREADY USED! Scanned at: {ticket.used_time.strftime('%H:%M')}")
+                messages.error(request, f"TICKET ALREADY USED! Scanned at: {ticket.used_time.strftime('%H:%M')}", extra_tags='scan_result')
             else:
                 # MARK AS USED
                 ticket.is_used = True
                 ticket.used_time = timezone.now()
                 ticket.scanned_by = request.user
                 ticket.save()
-                messages.success(request, f"VALID TICKET! Seat: {ticket.route.bus_number} | Dest: {ticket.route.destination.name}")
+                messages.success(request, f"VALID TICKET! Seat: {ticket.route.bus_number} | Dest: {ticket.route.destination.name}", extra_tags='scan_result')
                 
         except Ticket.DoesNotExist:
             # Check if it's a Pass
             try:
                 found_pass = Pass.objects.get(barcode_data=barcode_data)
                 if found_pass.is_valid:
-                    messages.success(request, f"VALID MONTHLY PASS! User: {found_pass.user.username}")
+                    messages.success(request, f"VALID MONTHLY PASS! User: {found_pass.user.username}", extra_tags='scan_result')
                 else:
-                    messages.error(request, f"EXPIRED PASS! Valid until: {found_pass.valid_until}")
+                    messages.error(request, f"EXPIRED PASS! Valid until: {found_pass.valid_until}", extra_tags='scan_result')
             except Pass.DoesNotExist:
-                messages.error(request, "INVALID BARCODE! No ticket or pass found.")
+                messages.error(request, "INVALID BARCODE! No ticket or pass found.", extra_tags='scan_result')
         except Exception as e:
-            messages.error(request, f"Error: {str(e)}")
+            messages.error(request, f"Error: {str(e)}", extra_tags='scan_result')
             
     return redirect('conductor_dashboard')
 
@@ -734,21 +734,12 @@ def create_conductor(request):
 def conductor_dashboard(request):
     """
     Conductor Dashboard / Scanner View.
-    Allows conductors to verify passes by entering barcode data (simulated scan).
+    Displays the QR scanner and results of previous scans via messages.
     """
-    result = None
-    if request.method == 'POST':
-        barcode_input = request.POST.get('barcode_data')
-        try:
-            found_pass = Pass.objects.get(barcode_data=barcode_input)
-            if found_pass.is_valid:
-                result = {'status': 'success', 'msg': f"VALID PASS. User: {found_pass.user.username}", 'detail': f"Expires: {found_pass.valid_until}"}
-            else:
-                result = {'status': 'error', 'msg': f"EXPIRED PASS. User: {found_pass.user.username}", 'detail': f"Expired on: {found_pass.valid_until}"}
-        except Pass.DoesNotExist:
-            result = {'status': 'error', 'msg': "INVALID BARCODE", 'detail': "No pass found."}
+    if not (is_conductor(request.user) or is_admin(request.user)):
+        return redirect('home')
 
-    return render(request, 'conductor_dashboard.html', {'result': result})
+    return render(request, 'conductor_dashboard.html')
 
 @login_required
 @user_passes_test(is_admin)
