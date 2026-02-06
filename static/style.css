@@ -199,16 +199,18 @@ input[type="text"],
 input[type="password"],
 input[type="email"],
 input[type="number"],
-input[type="date"] {
+input[type="date"],
+.form-group input {
     width: 100%;
     padding: 0.85rem;
     border-radius: 10px;
-    border: 1px solid var(--glass-border);
-    background-color: rgba(255, 255, 255, 0.05);
-    /* Lighter input background */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Increased visibility */
+    background-color: rgba(255, 255, 255, 0.1); /* Increased visibility */
     color: white;
     box-sizing: border-box;
     transition: all 0.2s;
+    display: block; /* Ensure it takes space */
+    min-height: 45px; /* Force height */
 }
 
 input:focus {
